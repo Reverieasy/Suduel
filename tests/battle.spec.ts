@@ -37,15 +37,21 @@ test('Freeze disables entry only while valid; the same grid resumes without rese
   await expect(page.locator('[data-effect=freeze]')).toHaveCount(0)
 })
 
-test('Scramble buttons send their displayed digits; keyboard semantics and normal order restore', async ({ page }) => {
-  await page.goto('/tests/fixtures/room-harness.html?view=scramble&ttl=2500')
-  const buttons = page.locator('.number-pad button')
-  expect(await buttons.allTextContents()).toEqual(['9','8','7','6','5','4','3','2','1'])
-  await buttons.first().click(); await expect(page.getByTestId('last-command')).toContainText('"digit":9')
-  await page.getByRole('grid', { name: 'Sudoku puzzle', exact: true }).getByRole('button').nth(0).focus(); await page.keyboard.press('4')
-  await expect(page.getByTestId('last-command')).toContainText('"digit":4')
-  await expect(buttons.first()).toHaveText('1')
+test('Scramble changes board digits, preserves the keypad, translates input and restores clues', async ({ page }) => {
+  await page.goto('/tests/fixtures/room-harness.html?view=scramble&ttl=4500')
+  const buttons = page.locator('.number-pad button'), grid=page.getByRole('grid',{name:'Sudoku puzzle',exact:true})
   expect(await buttons.allTextContents()).toEqual(['1','2','3','4','5','6','7','8','9'])
+  await expect(grid.getByRole('button').nth(1)).toHaveText('8') // Canonical clue 2 maps to 8.
+  await buttons.first().click(); await expect(page.getByTestId('last-command')).toContainText('"digit":9')
+  await grid.getByRole('button').nth(0).focus(); await page.keyboard.press('4')
+  await expect(page.getByTestId('last-command')).toContainText('"digit":6')
+  await page.keyboard.press('n'); await page.keyboard.press('4')
+  await expect(grid.getByRole('button').nth(0)).toHaveAccessibleName(/notes 4/)
+  await expect(page.locator('[data-effect=scramble]')).toHaveCount(0)
+  await expect(grid.getByRole('button').nth(1)).toHaveText('2')
+  await expect(grid.getByRole('button').nth(0)).toHaveAccessibleName(/notes 6/)
+  await page.keyboard.press('n'); await page.keyboard.press('4')
+  await expect(page.getByTestId('last-command')).toContainText('"digit":4')
 })
 
 test('Accepted events render distinct cues, wrong feedback clears, and reduced motion disables shake', async ({ page }) => {

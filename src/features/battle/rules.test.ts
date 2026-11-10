@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { unitCells, validKeypad, NORMAL_KEYPAD, timerPhase } from './rules'
+import { unitCells, validKeypad, NORMAL_KEYPAD, timerPhase, displayDigit, canonicalDigit } from './rules'
 import { CueGate, EventCursor, type GameEvent } from './events'
 import { parsePreferences, DEFAULT_PREFERENCES } from '../audio/preferences'
 
@@ -17,6 +17,16 @@ describe('battle presentation boundaries', () => {
     const shuffled = [9,4,6,3,1,5,8,2,7]
     expect(validKeypad(shuffled)).toBe(shuffled)
     for (const value of [null, undefined, [1,2], [1,1,3,4,5,6,7,8,9], [0,2,3,4,5,6,7,8,9]]) expect(validKeypad(value)).toEqual(NORMAL_KEYPAD)
+  })
+  it('maps visible board digits and input inversely without altering empty cells', () => {
+    const mapping=[4,8,5,6,1,3,9,2,7]
+    expect(displayDigit(0,mapping)).toBe(0); expect(canonicalDigit(0,mapping)).toBe(0)
+    for(const digit of NORMAL_KEYPAD) {
+      expect(displayDigit(digit,mapping)).not.toBe(digit)
+      expect(canonicalDigit(displayDigit(digit,mapping),mapping)).toBe(digit)
+      expect(displayDigit(canonicalDigit(digit,mapping),mapping)).toBe(digit)
+      expect(displayDigit(digit,NORMAL_KEYPAD)).toBe(digit)
+    }
   })
   it.each([[30001,'normal'],[30000,'warning'],[10001,'warning'],[10000,'danger'],[5001,'danger'],[5000,'critical'],[1,'critical'],[0,'expired'],[-1,'expired']])('uses the server-derived urgency boundary at %sms', (ms, phase) => {
     expect(timerPhase(Number(ms))).toBe(phase)

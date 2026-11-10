@@ -13,7 +13,7 @@ import { MistakePressure } from './MistakePressure'
 import { BattleFeed } from './BattleFeed'
 import { AttackFlights, BattleAnnouncements, PressureTransfers, ScreenEffects } from './ScreenEffects'
 import { useFeedback } from './feedback'
-import { unitCells, validKeypad } from './rules'
+import { unitCells, validKeypad, NORMAL_KEYPAD, displayDigit, canonicalDigit } from './rules'
 import { audioManager } from '../audio/manager'
 
 interface Props { snapshot: RoomSnapshot; userId: string; now: number; busy: boolean; online: boolean; connection: string; command: (name: string, payload?: Record<string,string|number|boolean>) => Promise<void>; forfeit: () => void; menu: () => void; resync?: () => void }
@@ -31,20 +31,28 @@ export function BattleArena({ snapshot: s, userId, now, busy, online, connection
   const fogRegion = localEffects.find((e) => e.skill==='fog')?.region
   const hiddenCells = useMemo(() => new Set(fogRegion!=null ? unitCells('box',fogRegion) : []),[fogRegion])
   const scrambled = localEffects.find((e) => e.skill==='scramble')?.keypad
+  const localMapping = useMemo(() => validKeypad(scrambled), [scrambled])
+  const remoteScramble = remoteEffects.find((e) => e.skill==='scramble')?.keypad
+  const remoteMapping = useMemo(() => validKeypad(remoteScramble), [remoteScramble])
+  const shownClues = useMemo(() => match.clues.map((n) => displayDigit(n,localMapping)), [match.clues,localMapping])
+  const shownEntries = useMemo(() => board.entries.map((n) => displayDigit(n,localMapping)), [board.entries,localMapping])
+  const shownNotes = useMemo(() => notes.map((values) => values.map((n) => displayDigit(n,localMapping)).sort()), [notes,localMapping])
   const frozen = localEffects.some((e) => e.skill==='freeze'), recovering = Date.parse(state.input_recovery_until ?? '')>now
   const countdown = Math.max(0,Math.ceil((Date.parse(match.started_at)-now)/1000)), ended = now>=Date.parse(match.ends_at)
   const disabled = busy||!online||countdown>0||ended||frozen||recovering
   const wrongCells = useFeedback((store) => store.pulses.filter((p) => p.matchId===match.id&&p.kind==='wrong'&&p.cell!=null).map((p) => p.cell!).join(','))
   const invalid = useMemo(() => new Set(wrongCells ? wrongCells.split(',').map(Number) : []),[wrongCells])
-  const rivalBoard: BattleBoard = battle.boards?.find((b) => b.user_id===rival.user_id) ?? {user_id:rival.user_id,clues:match.clues,entries:match.clues,version:0,redacted_cells:[]}
+  const rivalBoard = useMemo<BattleBoard>(() => battle.boards?.find((b) => b.user_id===rival.user_id) ?? {user_id:rival.user_id,clues:match.clues,entries:match.clues,version:0,redacted_cells:[]}, [battle.boards,rival.user_id,match.clues])
+  const shownRival = useMemo(() => ({ ...rivalBoard, clues:rivalBoard.clues.map((n) => displayDigit(n,remoteMapping)), entries:rivalBoard.entries.map((n) => n===null ? null : displayDigit(n,remoteMapping)) }), [rivalBoard,remoteMapping])
   const latestMove = (s.events ?? []).filter((e) => e.match_id===match.id&&e.kind==='battle_move'&&e.payload.actor_id===rival.user_id&&now-Date.parse(e.created_at)<800).at(-1)
-  const place = useCallback((digit: number) => {
+  const place = useCallback((visibleDigit: number) => {
     if(disabled||match.clues[selected])return
+    const digit = canonicalDigit(visibleDigit,localMapping)
     if(pencil&&digit>0&&!board.entries[selected]) { setNotes((current) => current.map((values,index) => index===selected ? values.includes(digit) ? values.filter((n) => n!==digit) : [...values,digit].sort() : values)); return }
     if(board.entries[selected]===digit)return
     setNotes((current) => current.map((values,index) => index===selected ? [] : values))
     void command('move',{match_id:match.id,version:board.version,cell:selected,digit})
-  },[disabled,match,board,selected,pencil,command])
+  },[disabled,match,board,selected,pencil,command,localMapping])
   const select = useCallback((cell: number) => { if(cell!==selected)audioManager.play('select'); setSelected(cell) },[selected])
   const toggle = useCallback(() => setPencil((value) => !value),[])
   const ownPercent = progressPercent(own.correct_cells,match.clues), rivalPercent = progressPercent(other.correct_cells,rivalBoard.clues)
@@ -54,13 +62,13 @@ export function BattleArena({ snapshot: s, userId, now, busy, online, connection
     <div className="battle-view-switch" role="group" aria-label="Choose board view"><button aria-pressed={!rivalView} onClick={() => setRivalView(false)}>YOUR GRID · {ownPercent}%</button><button aria-pressed={rivalView} onClick={() => setRivalView(true)}>RIVAL GRID · {rivalPercent}%</button></div>
     <div className="battle-board-arena"><AttackFlights matchId={match.id}/><PressureTransfers matchId={match.id} userId={userId}/>
       <section className="battle-board-panel local-battle-panel" aria-label="Your battle board"><div className="battle-player-heading"><Avatar name={me.username} url={me.avatar_url}/><div><h2>YOU <small>@{me.username}</small></h2><progress max={100} value={ownPercent} aria-label="Your progress"/></div><strong className="blue">{ownPercent}%</strong></div>
-        <div className="battle-grid-container"><div className="battle-grid-stack"><SudokuGrid clues={match.clues} values={board.entries} notes={notes} selected={selected} pencil={pencil} invalid={invalid} hiddenCells={hiddenCells} disabled={disabled} describedBy="battle-input-status" onSelect={select} onPlace={place} onToggleNotes={toggle}/><ScreenEffects effects={localEffects} now={now} matchId={match.id} playerId={userId}/>{countdown>0&&<div className="race-countdown" role="status"><strong>{countdown}</strong><span>GET READY</span></div>}</div></div>
-        <div className="battle-local-controls"><NumberPad digits={validKeypad(scrambled)} disabled={disabled} place={place}/><div className="battle-utilities"><button disabled={disabled} aria-pressed={pencil} onClick={toggle}><Pencil size={14}/> NOTES {pencil?'ON':'OFF'}</button><button disabled={disabled} onClick={() => place(0)}><Eraser size={14}/> ERASE</button><span id="battle-input-status" role="status">{recovering?'RECOVERING · 0.5s':frozen?'FROZEN':Date.parse(state.freeze_immunity_until ?? '')>now?'FREEZE IMMUNITY':scrambled?'KEYPAD SCRAMBLED':'1–9 · N NOTES · DEL ERASE'}</span></div></div>
+        <div className="battle-grid-container"><div className="battle-grid-stack"><SudokuGrid clues={shownClues} values={shownEntries} notes={shownNotes} selected={selected} pencil={pencil} invalid={invalid} hiddenCells={hiddenCells} disabled={disabled} describedBy="battle-input-status" onSelect={select} onPlace={place} onToggleNotes={toggle}/><ScreenEffects effects={localEffects} now={now} matchId={match.id} playerId={userId}/>{countdown>0&&<div className="race-countdown" role="status"><strong>{countdown}</strong><span>GET READY</span></div>}</div></div>
+        <div className="battle-local-controls"><NumberPad digits={NORMAL_KEYPAD} disabled={disabled} place={place}/><div className="battle-utilities"><button disabled={disabled} aria-pressed={pencil} onClick={toggle}><Pencil size={14}/> NOTES {pencil?'ON':'OFF'}</button><button disabled={disabled} onClick={() => place(0)}><Eraser size={14}/> ERASE</button><span id="battle-input-status" role="status">{recovering?'RECOVERING · 0.5s':frozen?'FROZEN':scrambled?'BOARD DIGITS SHUFFLED':Date.parse(state.freeze_immunity_until ?? '')>now?'FREEZE IMMUNITY':'1–9 · N NOTES · DEL ERASE'}</span></div></div>
         <MistakePressure snapshot={s} playerId={userId} label="Your"/>
       </section>
       <section className="battle-center" aria-label="Match timer and round score"><MatchTimer snapshot={s} now={now} userId={userId}/></section>
       <section className="battle-board-panel rival-battle-panel" aria-label="Opponent battle board"><div className="battle-player-heading"><Avatar name={rival.username} url={rival.avatar_url} opponent/><div><h2>RIVAL <small>@{rival.username}</small></h2><progress max={100} value={rivalPercent} aria-label="Opponent progress"/></div><strong className="red">{rivalPercent}%</strong></div>
-        <div className="battle-grid-container"><div className="battle-grid-stack"><OpponentBoard board={rivalBoard} changedCell={typeof latestMove?.payload.cell==='number'?latestMove.payload.cell:undefined}/><ScreenEffects effects={remoteEffects} now={now} matchId={match.id} playerId={rival.user_id} audible={false}/></div></div>
+        <div className="battle-grid-container"><div className="battle-grid-stack"><OpponentBoard board={shownRival} changedCell={typeof latestMove?.payload.cell==='number'?latestMove.payload.cell:undefined}/><ScreenEffects effects={remoteEffects} now={now} matchId={match.id} playerId={rival.user_id} audible={false}/></div></div>
         <div className="rival-status"><strong aria-label="Rival energy">RIVAL ENERGY <b>{rivalState.energy} / {battle.series.rules.maxEnergy}</b></strong><span>{rivalOffline?'CONNECTION INTERRUPTED · GRACE PERIOD':remoteEffects.length?remoteEffects.map((e) => `${e.skill.toUpperCase()} ${Math.max(0,(Date.parse(e.expires_at)-now)/1000).toFixed(1)}s`).join(' · '):'LIVE CONFIRMED ENTRIES · READ ONLY'}</span><small>{battle.series.rules.puzzleAssignment?.startsWith('independent-')?'INDEPENDENT PUZZLES · SAME DIFFICULTY':'LEGACY SHARED PUZZLE'}</small></div>
         <MistakePressure snapshot={s} playerId={rival.user_id} label="Rival"/>
       </section>

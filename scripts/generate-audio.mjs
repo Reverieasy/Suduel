@@ -60,5 +60,14 @@ compose('results/round-end', .45, [[440,0,.4,.16,-220],[220,.1,.3,.12]])
 compose('results/victory', 1.5, [[523,0,.4,.2],[659,.18,.4,.2],[784,.36,.45,.2],[1046,.58,.8,.21],[659,.6,.8,.09],[784,.6,.8,.09]])
 compose('results/defeat', 1.05, [[523,0,.36,.18],[392,.2,.4,.18],[294,.4,.55,.18],[147,.45,.55,.08]])
 compose('results/draw', .8, [[440,0,.4,.16],[554,.18,.4,.14],[440,.36,.4,.15]])
+// Quiet original 12-second homepage loop. All voices decay to zero before the seam.
+const ambience=[]
+const chords=[[130.8128,164.8138,195.9977],[110,130.8128,164.8138],[87.3071,110,130.8128],[97.9989,123.4708,146.8324]]
+for(let bar=0;bar<4;bar++) {
+  const chord=chords[bar]
+  chord.forEach((frequency)=>ambience.push([frequency,bar*3,2.95,.055,0,.04]))
+  for(let note=0;note<8;note++)ambience.push([chord[[0,2,1,2,0,1,2,1][note]]*4,bar*3+note*.375,.34,.034,0,.08])
+}
+compose('ambience/home-loop',12,ambience)
 writeFileSync('public/audio/manifest.json', JSON.stringify(Object.fromEntries(sounds), null, 2) + '\n')
 console.log(`Generated ${sounds.size} original PCM WAV cues (${[...sounds.values()].reduce((sum, s) => sum + s.bytes, 0)} bytes).`)

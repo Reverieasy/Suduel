@@ -77,7 +77,11 @@ finished deploying the V3 commit before using that origin for acceptance.
 6. Charge energy through correct unit completions and compare attacks on both
    actual grids. Fog lasts 5 s, Freeze 2.5 s plus 3 s immunity, Scramble 8 s and
    Shield up to 20 s. Refresh during each effect; old impacts must not replay.
-   During Fog, the caster's rival grid must conceal the same region too.
+   During Fog, the caster's rival grid must conceal the same region too. Scramble
+   costs 4 energy and Shield costs 5 in a new series. Scramble changes digits on
+   the board rather than keypad order; both clients must display the same remapped
+   clues/entries. Entering displayed digits, taking notes, erasing and expiry must
+   preserve correct underlying state without false mistakes.
 7. Briefly interrupt one device's network, restore it, and compare both boards,
    pressure, energy and active deadlines. Confirm eventual live connection status.
 8. Finish a round and start the next together. Both receive fresh distinct matched

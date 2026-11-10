@@ -41,7 +41,7 @@ events trigger fresh snapshots and reconnects restore both boards. The existing
 
 ## Pressure and balancing
 
-New series use saved rule version 4. Mistake Pressure defaults:
+New series use saved rule version 5. Mistake Pressure defaults:
 
 | Rule | Value |
 | --- | --- |
@@ -65,7 +65,18 @@ Changing balancing requires a new `private.battle_config` version. Keep
 `DEFAULT_BATTLE_RULES` in sync for guide/fixture defaults; clients render saved
 series rules. Existing series retain their saved durations and rule values.
 New-series attack durations are Fog **5 s**, Freeze **2.5 s**, Scramble **8 s** and
-Shield **20 s**. Shared cooldown remains 1 s; post-Freeze immunity remains 3 s.
+Shield **20 s**. Scramble costs **4 energy**; Shield costs **5 energy**. Shared
+cooldown remains 1 s; post-Freeze immunity remains 3 s. Saved older series retain
+their original prices; start a new series for the updated balance.
+
+Scramble now remaps the digits displayed on the actual board, including clues,
+confirmed entries and local notes. Every digit changes symbol using the same
+server-generated permutation on both clients. Keypad order remains 1–9; keyboard
+and keypad input are translated from displayed digits back to canonical digits
+before the unchanged server move validator. A one-to-one mapping preserves Sudoku
+constraints, and expiry restores the original display without modifying any
+confirmed cells, progress or rewards. The legacy effect field `keypad` carries
+this mapping; no puzzle solution is included.
 
 ## Arena and feedback
 
@@ -81,16 +92,21 @@ pressure-break sound and red-to-yellow transfer particles. Capped/limited awards
 describe the actual outcome. Accepted events populate the internally scrolling
 live feed. Attacks and persistent effects render on the appropriate actual board
 for both players. System/app reduced-motion settings disable travel and pulses.
-The original local pack now has 30 WAV assets (approximately 532 KB).
+The local pack contains 30 effects plus one original 12-second homepage ambience
+loop (approximately 1.06 MB total). Music starts after user interaction, has a
+persisted toggle, follows master mute/volume, pauses in hidden tabs and stops when
+leaving the homepage. Only background pixels and decorative boards animate; the
+content stays fixed and reduced-motion settings stop the background movement.
+All wordmarks now render “EL” red, including the header and footer.
 
 ## Verification record
 
 | Check | Result |
 | --- | --- |
 | TypeScript, ESLint, production bundle | Pass |
-| Unit/domain/audio | 50 passed; includes 18 generated pairs across all three tiers, uniqueness, valid solutions, estimator reproducibility and rejection of unmatched/duplicate pairs |
+| Unit/domain/audio | 52 passed; includes 18 generated pairs across all three tiers, uniqueness, valid solutions, estimator reproducibility and rejection of unmatched/duplicate pairs |
 | Pair-generation stress check | 300 additional pairs across all tiers, zero failures |
-| Browser regression | 34 passed; 2 live-account tests explicitly skipped without credentials |
+| Browser regression | 38 passed; 2 live-account tests explicitly skipped without credentials |
 | V3 browser behavior | Rival confirmed entries/erase/reload/Fog redaction, read-only grid, pressure recovery/break/feed/transfer/reset presentation, reduced motion and compact dock |
 | Layout screenshots inspected | 1366×768 desktop and 390×844 phone; automated bounds also checked at 1920×1080, 1600×900, 1440×900 and 768×1024 |
 | Database contracts | Phase 2, saved-v1 Phase 3 and V3 suites all pass in rolled-back transactions |
@@ -105,6 +121,7 @@ Applied to existing project `curftgyefvgakxnmrqye`:
 - `20261110134417_battle_arena_v3_pressure.sql`
 - `20261110135800_longer_battle_effects.sql`
 - `20261110140820_solver_matched_battle_puzzles.sql`
+- `20261110220535_board_scramble_energy_costs.sql`
 - Updated `start-race` Edge Function, version 3, active.
 
 The frontend release target is https://suduel.vercel.app. Follow

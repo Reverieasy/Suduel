@@ -109,6 +109,54 @@ test('Confirmed mistakes preserve entries, recover input, pulse pressure, transf
   await expect(page.getByLabel('Rival energy')).toContainText('1 / 5'); await expect(page.locator('.pressure-transfer.to-rival')).toHaveCount(0)
 })
 
+test('Board Scramble maps both actual grids, input, notes and reconnect without changing keypad order', async ({page}) => {
+  const server=await roomFixture(page)
+  const own=page.getByRole('grid',{name:'Sudoku puzzle',exact:true}), rival=page.getByRole('grid',{name:'Opponent Sudoku puzzle'})
+  server.respond((s,body)=> {
+    if(body.p_command!=='move')return
+    s.board!.entries[body.p_payload.cell]=body.p_payload.digit; s.board!.version++
+    s.battle!.boards![0].entries=[...s.board!.entries];s.battle!.boards![0].version=s.board!.version
+    s.action={id:body.p_action_id,cell:body.p_payload.cell};s.cursor++
+  })
+  server.mutate((s)=> {
+    const own=s.players[0].user_id, other=s.players[1].user_id
+    s.battle!.effects=[own,other].map((target_id,i)=>({id:crypto.randomUUID(),match_id:s.match!.id,source_id:i?own:other,target_id,skill:'scramble',starts_at:new Date().toISOString(),expires_at:new Date(Date.now()+8000).toISOString(),consumed_at:null,region:null,keypad:i?[9,1,2,3,4,5,6,7,8]:[2,3,4,5,6,7,8,9,1]}))
+    s.battle!.boards![1].entries[0]=2
+  })
+  await server.resync()
+  await expect(own.getByRole('button').nth(1)).toHaveText('3')
+  await expect(rival.getByRole('gridcell').nth(1)).toHaveText('2')
+  await expect(rival.getByRole('gridcell').nth(0)).toHaveText('1')
+  expect(await page.locator('.number-pad button').allTextContents()).toEqual(['1','2','3','4','5','6','7','8','9'])
+  await page.getByRole('button',{name:'Enter 2',exact:true}).click()
+  await expect(own.getByRole('button').nth(0)).toHaveText('2')
+  await expect(page.getByRole('meter',{name:'Your mistake pressure'})).toHaveAttribute('aria-valuenow','0')
+  await own.getByRole('button').nth(0).focus(); await page.keyboard.press('Delete')
+  await expect(own.getByRole('button').nth(0)).toBeEmpty()
+  await page.keyboard.press('2'); await expect(own.getByRole('button').nth(0)).toHaveText('2')
+  await page.reload(); await expect(own.getByRole('button').nth(0)).toHaveText('2')
+  await expect(rival.getByRole('gridcell').nth(0)).toHaveText('1')
+  await expect(rival.getByRole('button')).toHaveCount(0)
+  await own.getByRole('button').nth(3).focus(); await page.keyboard.press('n');await page.keyboard.press('4')
+  await expect(own.getByRole('button').nth(3)).toHaveAccessibleName(/notes 4/)
+  server.mutate((s)=>{s.battle!.effects=[]}); await server.resync()
+  await expect(own.getByRole('button').nth(0)).toHaveText('1')
+  await expect(own.getByRole('button').nth(1)).toHaveText('2')
+  await expect(own.getByRole('button').nth(3)).toHaveAccessibleName(/notes 3/)
+  await expect(rival.getByRole('gridcell').nth(0)).toHaveText('2')
+})
+
+test('Scramble costs four energy and Shield costs five in the skill dock', async ({page}) => {
+  const server=await roomFixture(page)
+  const scramble=page.getByRole('button',{name:/^Cast scramble\. 4 energy/}), shield=page.getByRole('button',{name:/^Cast shield\. 5 energy/})
+  server.mutate((s)=>{s.battle!.players[0].energy=3}); await server.resync()
+  await expect(scramble).toBeDisabled(); await expect(shield).toBeDisabled()
+  server.mutate((s)=>{s.battle!.players[0].energy=4}); await server.resync()
+  await expect(scramble).toBeEnabled(); await expect(shield).toBeDisabled()
+  server.mutate((s)=>{s.battle!.players[0].energy=5}); await server.resync()
+  await expect(shield).toBeEnabled()
+})
+
 test('Reduced motion preserves readable pressure and compact view retains timer and dock', async ({page}) => {
   await page.emulateMedia({reducedMotion:'reduce'})
   await page.setViewportSize({width:390,height:600})

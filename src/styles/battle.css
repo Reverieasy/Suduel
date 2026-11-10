@@ -41,11 +41,12 @@
 .cloud-b { top: -25%; left: -35%; animation-delay: -1s; }
 .cloud-c { bottom: -25%; right: -30%; animation-delay: -.5s; }
 .frost-overlay { position: absolute; inset: 0; border: 5px solid #b3d9ffb0; box-shadow: inset 0 0 34px #82acff70; background: linear-gradient(135deg,#b7e6ff1a,transparent 40%,#c9b2ff26); }
-.frost-overlay > span,.shield-aura > span { position: absolute; bottom: 8px; left: 50%; transform: translateX(-50%); padding: 3px 10px; white-space: nowrap; border: 1px solid #c2a1ff; background: #182642; color: #eee4ff; font: 700 11px var(--font-game); border-radius: 3px; }
+.frost-overlay > span,.shield-aura > span,.scramble-accent > span { position: absolute; bottom: 8px; left: 50%; transform: translateX(-50%); padding: 3px 10px; white-space: nowrap; border: 1px solid #c2a1ff; background: #182642; color: #eee4ff; font: 700 11px var(--font-game); border-radius: 3px; }
 .frost-crystals i { position: absolute; left: calc(mod(var(--particle),3) * 37% + 5%); top: calc(round(down,var(--particle) / 3) * 42%); font-size: 38px; color: #b7d7ff; opacity: .75; font-style: normal; }
 .shield-aura { position: absolute; inset: 2px; border: 3px solid #2fcb99; border-radius: 8px; box-shadow: inset 0 0 16px #2fcb9945; }
 .shield-aura > span { border-color: #2fcb99; color: #b2ffe5; background: #103b35; }
 .scramble-accent { position: absolute; inset: 0; border: 2px solid #ffa939; box-shadow: inset 0 0 12px #ffa93930; }
+.scramble-accent > span { border-color: #ffa939; background: #35250f; color: #ffdcad; }
 .scramble-accent::before,.scramble-accent::after { content: ''; position: absolute; height: 2px; width: 35%; background: #ffa939a0; top: 30%; left: 0; animation: glitch-line 550ms steps(2) 2; }
 .scramble-accent::after { left: auto; right: 0; top: 70%; animation-delay: 100ms; }
 .effect-ending { animation: effect-dissolve 180ms ease-out forwards; }

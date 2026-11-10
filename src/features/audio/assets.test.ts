@@ -18,3 +18,13 @@ it('ships distinct, non-silent, unclipped PCM assets for every registered cue', 
   }
   expect(hashes.size).toBe(Object.keys(SOUND_FILES).length)
 })
+it('ships a quiet original homepage loop with a silent loop seam', () => {
+  const data=readFileSync('public/audio/ambience/home-loop.wav')
+  expect(data.toString('ascii',0,4)).toBe('RIFF')
+  expect((data.length-44)/2/data.readUInt32LE(24)).toBe(12)
+  expect(data.readInt16LE(44)).toBe(0)
+  expect(Math.abs(data.readInt16LE(data.length-2))).toBeLessThan(2)
+  let peak=0
+  for(let i=44;i<data.length;i+=2)peak=Math.max(peak,Math.abs(data.readInt16LE(i)))
+  expect(peak).toBeGreaterThan(1000);expect(peak).toBeLessThan(16000)
+})

@@ -4,7 +4,7 @@ set local plpgsql.check_asserts=on;
 do $$
 declare a uuid:=gen_random_uuid(); b uuid:=gen_random_uuid(); outsider uuid:=gen_random_uuid(); room uuid; mid uuid; next_mid uuid; code text;
   s jsonb; t jsonb; action uuid; start_action uuid; sol_a integer[]; sol_b integer[]; clues_a integer[]; clues_b integer[]; v integer:=0;
-  failed boolean; v_i integer; n integer; before_count integer; before_version integer; v_skill text; pair jsonb; estimate jsonb:='{"method":"solver-work-v1","score":11,"editableCells":11,"nakedSingles":11,"hiddenSingles":0,"searchNodes":0,"guesses":0,"backtracks":0,"maxGuessDepth":0}';
+  failed boolean; v_i integer; n integer; before_count integer; before_version integer; v_skill text; v_cost integer; v_map integer[]; pair jsonb; estimate jsonb:='{"method":"solver-work-v1","score":11,"editableCells":11,"nakedSingles":11,"hiddenSingles":0,"searchNodes":0,"guesses":0,"backtracks":0,"maxGuessDepth":0}';
 begin
   insert into auth.users(id,raw_user_meta_data,email_confirmed_at) values
     (a,jsonb_build_object('username','qa_'||substr(replace(a::text,'-',''),1,12)),now()),
@@ -156,10 +156,29 @@ begin
   assert (select count(*)=2 from private.battle_puzzles where match_id=next_mid),'Next-round independent puzzles missing';
   update public.game_matches set started_at=now()-interval '1 second' where id=next_mid;
   perform set_config('request.jwt.claim.sub',a::text,true);
+  s:=public.suduel_command('snapshot',jsonb_build_object('code',code));
+  assert s->'battle'->'series'->'rules'->'skills'->'scramble'->>'cost'='4' and s->'battle'->'series'->'rules'->'skills'->'shield'->>'cost'='5','New skill costs not saved to series';
+  for v_i in 1..100 loop
+    v_map:=private.scramble_digits();
+    assert cardinality(v_map)=9 and v_map @> array[1,2,3,4,5,6,7,8,9] and not exists(select 1 from unnest(v_map) with ordinality d(n,i) where d.n=d.i),'Board shuffle left digits unchanged';
+  end loop;
   foreach v_skill in array array['fog','freeze','scramble','shield'] loop
+    select (battle_rules->'skills'->v_skill->>'cost')::integer into v_cost from public.game_matches where id=next_mid;
+    update public.battle_players set energy=v_cost-1,cooldown_until=null where match_id=next_mid and user_id=a;
+    select version into before_version from public.battle_players where match_id=next_mid and user_id=a;
+    failed:=false; begin perform public.suduel_command('cast',jsonb_build_object('code',code,'match_id',next_mid,'skill',v_skill,'battle_version',before_version),gen_random_uuid()); exception when others then failed:=position('Not enough energy' in sqlerrm)>0; end;
+    assert failed,'Underfunded skill accepted';
     update public.battle_players set energy=5,cooldown_until=null where match_id=next_mid and user_id=a;
     select version into before_version from public.battle_players where match_id=next_mid and user_id=a;
-    s:=public.suduel_command('cast',jsonb_build_object('code',code,'match_id',next_mid,'skill',v_skill,'battle_version',before_version),gen_random_uuid());
+    action:=gen_random_uuid();
+    s:=public.suduel_command('cast',jsonb_build_object('code',code,'match_id',next_mid,'skill',v_skill,'battle_version',before_version),action);
+    assert (select energy=5-v_cost from public.battle_players where match_id=next_mid and user_id=a),'Incorrect skill price charged';
+    perform public.suduel_command('cast',jsonb_build_object('code',code,'match_id',next_mid,'skill',v_skill,'battle_version',before_version),action);
+    assert (select energy=5-v_cost from public.battle_players where match_id=next_mid and user_id=a),'Skill retry charged twice';
+    if v_skill='scramble' then
+      assert exists(select 1 from jsonb_array_elements(s->'battle'->'effects') e where e->>'skill'='scramble' and jsonb_array_length(e->'keypad')=9),'Digit shuffle mapping missing from snapshot';
+      assert (select b.entries=bp.clues from private.player_boards b join private.battle_puzzles bp using(match_id,user_id) where b.match_id=next_mid and b.user_id<>a),'Scramble mutated confirmed rival cells';
+    end if;
     assert exists(select 1 from public.skill_effects e join public.game_matches gm on gm.id=e.match_id where e.match_id=next_mid and e.skill=v_skill and extract(epoch from e.expires_at-e.starts_at)*1000=(gm.battle_rules->'skills'->v_skill->>'durationMs')::integer),'Configured effect duration not honored';
   end loop;
   assert s->'battle'->'series'->'rules'->'skills'->'fog'->>'durationMs'='5000'

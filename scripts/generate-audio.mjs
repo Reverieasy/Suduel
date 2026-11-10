@@ -50,6 +50,7 @@ compose('battle/scramble-impact', .38, [[260,0,.09,.22],[1100,.07,.08,.2,-5000],
 compose('battle/scramble-end', .25, [[440,0,.14,.16],[880,.09,.15,.18]])
 compose('battle/shield-activate', .48, [[220,0,.4,.2,260],[440,.06,.38,.14],[880,.15,.3,.1]])
 compose('battle/shield-block', .38, [[660,0,.34,.23],[987,0,.28,.14],[1420,.015,.24,.1]], .18)
+compose('battle/pressure-break', .42, [[165,0,.14,.22,-180,.35],[330,.12,.16,.19,800],[784,.25,.15,.16]], .15)
 compose('timer/warning', .4, [[440,0,.17,.16],[554,.2,.18,.16]])
 compose('timer/tick', .075, [[900,0,.07,.13]])
 compose('timer/tick-high', .085, [[1100,0,.08,.14]])

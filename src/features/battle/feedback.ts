@@ -2,7 +2,9 @@ import { create } from 'zustand'
 import type { CompletedUnit, Skill } from './rules'
 
 export interface FeedbackPulse {
-  id: string; matchId: string; kind: 'energy' | 'cast' | 'impact' | 'block' | 'wrong'
+  id: string; matchId: string; kind: 'energy' | 'cast' | 'impact' | 'block' | 'wrong' | 'pressure'
+  actorId?: string; targetId?: string; mistakeTotal?: number; stored?: number
+  blocked?: boolean
   skill?: Skill; cell?: number; units?: CompletedUnit[]; text: string; detail?: string
   expiresAt: number
 }

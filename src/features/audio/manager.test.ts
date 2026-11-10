@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, expect, it, vi } from 'vitest'
-import { AudioManager } from './manager'
+import { AudioManager, SOUND_FILES } from './manager'
 import { DEFAULT_PREFERENCES, usePreferences } from './preferences'
 
 const sources: { start: ReturnType<typeof vi.fn>; stop: ReturnType<typeof vi.fn> }[] = []
@@ -24,14 +24,14 @@ afterEach(() => { manager.dispose(); vi.restoreAllMocks(); vi.unstubAllGlobals()
 
 it('does not initialize or play before a user gesture; caches preloads after unlock', async () => {
   manager.play('valid_number'); expect(fetch).not.toHaveBeenCalled()
-  manager.unlock(); await vi.waitFor(() => expect(fetch).toHaveBeenCalledTimes(29))
+  manager.unlock(); await vi.waitFor(() => expect(fetch).toHaveBeenCalledTimes(Object.keys(SOUND_FILES).length))
   manager.unlock(); manager.play('valid_number','accepted')
   await vi.waitFor(() => expect(sources).toHaveLength(1))
   manager.play('valid_number','accepted'); clock = 1000; manager.play('valid_number','accepted')
-  await Promise.resolve(); expect(sources).toHaveLength(1); expect(fetch).toHaveBeenCalledTimes(29)
+  await Promise.resolve(); expect(sources).toHaveLength(1); expect(fetch).toHaveBeenCalledTimes(Object.keys(SOUND_FILES).length)
 })
 it('caps overlap at five voices and stops every active source immediately on mute', async () => {
-  manager.unlock(); await vi.waitFor(() => expect(fetch).toHaveBeenCalledTimes(29))
+  manager.unlock(); await vi.waitFor(() => expect(fetch).toHaveBeenCalledTimes(Object.keys(SOUND_FILES).length))
   for (let i = 0; i < 6; i++) { clock+=100; manager.play('fog_impact',`cast:${i}`); await vi.waitFor(() => expect(sources).toHaveLength(i+1)) }
   expect(sources[0].stop).toHaveBeenCalledOnce()
   usePreferences.setState({ sound: false }); manager.updateVolume()
@@ -40,7 +40,7 @@ it('caps overlap at five voices and stops every active source immediately on mut
   manager.play('fog_impact','muted'); await Promise.resolve(); expect(sources).toHaveLength(6)
 })
 it('suppresses background and disabled countdown cues, but keeps other gameplay cues', async () => {
-  manager.unlock(); await vi.waitFor(() => expect(fetch).toHaveBeenCalledTimes(29))
+  manager.unlock(); await vi.waitFor(() => expect(fetch).toHaveBeenCalledTimes(Object.keys(SOUND_FILES).length))
   usePreferences.setState({ countdownSound: false })
   manager.play('tick'); manager.play('warning'); manager.play('countdown')
   vi.stubGlobal('document', { hidden: true }); manager.play('wrong_number')

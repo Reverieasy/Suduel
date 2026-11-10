@@ -79,6 +79,10 @@
     "seconds": 0.38,
     "bytes": 16802
   },
+  "battle/pressure-break": {
+    "seconds": 0.42,
+    "bytes": 18566
+  },
   "timer/warning": {
     "seconds": 0.4,
     "bytes": 17684

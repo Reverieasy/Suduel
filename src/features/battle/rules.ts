@@ -1,16 +1,19 @@
 export type Skill = 'fog' | 'freeze' | 'scramble' | 'shield'
 export type UnitKind = 'row' | 'column' | 'box'
 export interface CompletedUnit { kind: UnitKind; index: number; reward: number }
+export type PressureRules = { threshold: number; energyPerBreak: number; maxRewardsPerRound: number; recoveryMs: number; rateWindowMs: number; maxActionsPerWindow: number }
+export const DEFAULT_PRESSURE_RULES: PressureRules = { threshold: 3, energyPerBreak: 1, maxRewardsPerRound: 2, recoveryMs: 500, rateWindowMs: 1000, maxActionsPerWindow: 8 }
 export type BattleRules = {
   version: number; maxEnergy: number; cooldownMs: number; freezeImmunityMs: number
   rewards: Record<UnitKind, number>; skills: Record<Skill, { cost: number; durationMs: number }>
+  mistakePressure?: PressureRules; puzzleAssignment?: string
 }
 export const BATTLE_SKILLS = {
-  fog: { cost: 1, durationMs: 3000 }, freeze: { cost: 2, durationMs: 1500 },
-  scramble: { cost: 2, durationMs: 5000 }, shield: { cost: 2, durationMs: 15000 },
+  fog: { cost: 1, durationMs: 5000 }, freeze: { cost: 2, durationMs: 2500 },
+  scramble: { cost: 2, durationMs: 8000 }, shield: { cost: 2, durationMs: 20000 },
 } as const
 export const DEFAULT_BATTLE_RULES: BattleRules = {
-  version: 1, maxEnergy: 5, cooldownMs: 1000, freezeImmunityMs: 3000,
+  version: 4, maxEnergy: 5, cooldownMs: 1000, freezeImmunityMs: 3000, mistakePressure: DEFAULT_PRESSURE_RULES, puzzleAssignment: 'independent-solver-matched-v1',
   rewards: { row: 1, column: 1, box: 2 }, skills: BATTLE_SKILLS,
 }
 export const SKILLS: Skill[] = ['fog', 'freeze', 'scramble', 'shield']

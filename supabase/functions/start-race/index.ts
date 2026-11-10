@@ -1,5 +1,6 @@
 import { createClient } from 'npm:@supabase/supabase-js@2.119.0'
 import { generatePuzzle } from './engine.ts'
+import { generateBattlePair } from './battlePuzzles.ts'
 
 const cors = { 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type', 'Access-Control-Allow-Methods': 'POST, OPTIONS' }
 const reply = (body: unknown, status = 200) => new Response(JSON.stringify(body), { status, headers: { ...cors, 'Content-Type': 'application/json' } })
@@ -22,8 +23,12 @@ Deno.serve(async (request: Request) => {
     if (error || !snapshot?.room) return reply({ error: error?.message ?? 'Room not found.' }, 403)
     const room = snapshot.room
     if (room.status !== 'waiting' && room.status !== 'finished') return reply({ error: 'This room already started or closed.' }, 409)
-    const puzzle = generatePuzzle(room.difficulty)
-    const { data: matchId, error: startError } = await admin.rpc('suduel_start', { p_room: room.id, p_actor: user.id, p_action: input.action_id, p_clues: puzzle.clues, p_solution: puzzle.solution })
+    const random = () => crypto.getRandomValues(new Uint32Array(1))[0] / 4294967296
+    const puzzles = room.mode === 'battle' ? generateBattlePair(room.difficulty, random) : null
+    const puzzle = puzzles?.[0] ?? generatePuzzle(room.difficulty, random)
+    const { data: matchId, error: startError } = room.mode === 'battle'
+      ? await admin.rpc('suduel_start_battle', { p_room: room.id, p_actor: user.id, p_action: input.action_id, p_puzzles: puzzles })
+      : await admin.rpc('suduel_start', { p_room: room.id, p_actor: user.id, p_action: input.action_id, p_clues: puzzle.clues, p_solution: puzzle.solution })
     if (startError) return reply({ error: startError.message }, 409)
     return reply({ match_id: matchId })
   } catch { return reply({ error: 'Unable to start this match. Refresh the room and try again.' }, 400) }

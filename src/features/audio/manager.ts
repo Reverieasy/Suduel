@@ -8,6 +8,7 @@ export const SOUND_FILES = {
   fog_cast: 'battle/fog-cast', fog_impact: 'battle/fog-impact', freeze_cast: 'battle/freeze-cast', freeze_impact: 'battle/freeze-impact',
   freeze_end: 'battle/freeze-end', scramble_cast: 'battle/scramble-cast', scramble_impact: 'battle/scramble-impact', scramble_end: 'battle/scramble-end',
   shield_activate: 'battle/shield-activate', shield_block: 'battle/shield-block',
+  pressure_break: 'battle/pressure-break',
   warning: 'timer/warning', tick: 'timer/tick', tick_high: 'timer/tick-high', tick_final: 'timer/tick-final', countdown: 'timer/countdown',
   round_end: 'results/round-end', victory: 'results/victory', defeat: 'results/defeat', draw: 'results/draw',
 } as const

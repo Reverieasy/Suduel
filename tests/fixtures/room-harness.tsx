@@ -7,6 +7,7 @@ import RoomPage from '../../src/features/multiplayer/RoomPage'
 import { useAuth } from '../../src/features/auth/store'
 import { Shell } from '../../src/app/Shell'
 import { Lobby } from '../../src/features/multiplayer/Lobby'
+import { BattleArena } from '../../src/features/battle/BattleArena'
 import { Race } from '../../src/features/multiplayer/Race'
 import { Results } from '../../src/features/multiplayer/Results'
 import { Intermission } from '../../src/features/battle/Intermission'
@@ -18,8 +19,11 @@ import { DEFAULT_BATTLE_RULES, type Skill } from '../../src/features/battle/rule
 import type { RoomSnapshot } from '../../src/features/multiplayer/types'
 import '../../src/styles/index.css'
 import '../../src/styles/battle.css'
+import '../../src/styles/arena.css'
 
-const now = Date.now(), userId = crypto.randomUUID(), rivalId = crypto.randomUUID(), roomId = crypto.randomUUID(), matchId = crypto.randomUUID(), seriesId = crypto.randomUUID()
+const fixtureIds: string[] = JSON.parse(sessionStorage.getItem('suduel-fixture-ids') ?? 'null') ?? Array.from({length:5}, () => crypto.randomUUID())
+sessionStorage.setItem('suduel-fixture-ids',JSON.stringify(fixtureIds))
+const now = Date.now(), [userId,rivalId,roomId,matchId,seriesId] = fixtureIds
 const query = new URLSearchParams(window.location.search), view = query.get('view') ?? 'race'
 const isBattle = !['race','setup','lobby','results'].includes(view)
 const solution = Array.from({ length: 81 }, (_, i) => (Math.floor(i/9)*3+Math.floor(i/27)+i%9)%9+1)
@@ -38,7 +42,7 @@ function effect(skill: Skill, duration: number) {
 if (isBattle) initial.battle = {
   series: { id: seriesId, room_id: roomId, status: 'active', winner_id: null, outcome: null, created_at: new Date(now).toISOString(), completed_at: null, rules: DEFAULT_BATTLE_RULES },
   score: [userId, rivalId].map((id) => ({ series_id: seriesId, user_id: id, rounds_won: 0 })),
-  players: [userId,rivalId].map((id) => ({ user_id: id, match_id: matchId, energy: 5, version: 0, cooldown_until: null, freeze_immunity_until: null, energy_generated: 5, energy_stored: 5, skills_cast: 0, attacks_blocked: 0 })), effects: [],
+  players: [userId,rivalId].map((id) => ({ user_id: id, match_id: matchId, energy: 5, version: 0, cooldown_until: null, freeze_immunity_until: null, energy_generated: 5, energy_stored: 5, skills_cast: 0, attacks_blocked: 0, genuine_mistakes: 0, mistake_pressure: 0, pressure_rewards: 0, pressure_energy_received: 0, input_recovery_until: null })), effects: [], boards: [userId,rivalId].map((id,index) => ({ user_id:id, clues:index?clues.map((n)=>n?n%9+1:0):clues, entries:index?clues.map((n)=>n?n%9+1:0):[...clues], version:0, redacted_cells:[] })),
 }
 if (['fog','freeze','scramble','shield'].includes(view)) initial.battle!.effects = [effect(view as Skill, Number(query.get('ttl') ?? 5000))]
 if (view === 'results' || view === 'battle-results' || view === 'intermission') {
@@ -55,7 +59,7 @@ export function Harness() {
   async function command(name: string, payload?: Record<string, string | number | boolean>) { setLast(JSON.stringify({ name, ...payload })) }
   function cue(kind: string, payload: Record<string,unknown>) { setSnapshot((old) => ({ ...old, cursor: old.cursor+1, server_now: new Date().toISOString(), events: [...(old.events ?? []), { sequence: old.cursor+1, match_id: matchId, kind, created_at: new Date().toISOString(), payload }] })) }
   return <><AudioSystem /><div className="container"><p>UI TEST FIXTURE / NO NETWORK GAMEPLAY</p><button onClick={() => setSettings(true)}>Fixture sound settings</button><button onClick={() => cue('cast',{ actor_id: rivalId, target_id: userId, skill: 'fog', cost: 1, blocked: false })}>Fixture incoming hit</button><button onClick={() => cue('cast',{ actor_id: userId, target_id: rivalId, skill: 'freeze', cost: 2, blocked: false })}>Fixture accepted cast</button><button onClick={() => cue('energy',{ actor_id: userId, units: [{ kind: 'row', index: 0, reward: 1 },{ kind: 'box', index: 0, reward: 2 }], generated: 3, stored: 3, combo: 2 })}>Fixture combo</button><button onClick={() => setSnapshot((old) => ({ ...old, action: { id: crypto.randomUUID(), cell: 0, rejected: true } }))}>Fixture wrong number</button><output data-testid="last-command">{last}</output></div>
-    <main className="container page-content">{view === 'lobby' ? <Lobby snapshot={s} userId={userId} now={clock} busy={false} command={command} start={noop} leave={() => {}} /> : view.endsWith('results') ? <Results snapshot={s} userId={userId} busy={false} command={command} start={noop} /> : view === 'intermission' ? <Intermission snapshot={s} userId={userId} busy={false} command={command} start={noop} /> : view === 'setup' ? <CreateRoom /> : <Race snapshot={s} userId={userId} now={clock} busy={false} online command={command} forfeit={() => {}} />}</main>
+    <main className={s.battle ? 'room-page battle-live' : 'container page-content'}>{view === 'lobby' ? <Lobby snapshot={s} userId={userId} now={clock} busy={false} command={command} start={noop} leave={() => {}} /> : view.endsWith('results') ? <Results snapshot={s} userId={userId} busy={false} command={command} start={noop} /> : view === 'intermission' ? <Intermission snapshot={s} userId={userId} busy={false} command={command} start={noop} /> : view === 'setup' ? <CreateRoom /> : s.battle ? <BattleArena snapshot={s} userId={userId} now={clock} busy={false} online connection="live" command={command} forfeit={() => {}} menu={() => setSettings(true)} /> : <Race snapshot={s} userId={userId} now={clock} busy={false} online command={command} forfeit={() => {}} />}</main>
     {settings && <AudioSettings onClose={() => setSettings(false)} />}</>
 }
 createRoot(document.getElementById('root')!).render(<MemoryRouter initialEntries={view === 'room-page' ? ['/room/A1B2C3D4'] : ['/']}>

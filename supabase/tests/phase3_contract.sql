@@ -1,6 +1,9 @@
 -- Database-only fixtures; no real signups, passwords or lasting test users.
 begin;
 set local plpgsql.check_asserts = on;
+-- Keep the original timed-skill contract pinned to its saved v1 rules.
+-- The V3 contract separately verifies the new longer durations.
+delete from private.battle_config where version>1;
 do $$
 declare
   a uuid:=gen_random_uuid(); b uuid:=gen_random_uuid(); outsider uuid:=gen_random_uuid();

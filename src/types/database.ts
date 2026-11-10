@@ -22,7 +22,12 @@ export type Database = {
           energy_generated: number
           energy_stored: number
           freeze_immunity_until: string | null
+          genuine_mistakes: number
+          input_recovery_until: string | null
           match_id: string
+          mistake_pressure: number
+          pressure_energy_received: number
+          pressure_rewards: number
           skills_cast: number
           user_id: string
           version: number
@@ -34,7 +39,12 @@ export type Database = {
           energy_generated?: number
           energy_stored?: number
           freeze_immunity_until?: string | null
+          genuine_mistakes?: number
+          input_recovery_until?: string | null
           match_id: string
+          mistake_pressure?: number
+          pressure_energy_received?: number
+          pressure_rewards?: number
           skills_cast?: number
           user_id: string
           version?: number
@@ -46,7 +56,12 @@ export type Database = {
           energy_generated?: number
           energy_stored?: number
           freeze_immunity_until?: string | null
+          genuine_mistakes?: number
+          input_recovery_until?: string | null
           match_id?: string
+          mistake_pressure?: number
+          pressure_energy_received?: number
+          pressure_rewards?: number
           skills_cast?: number
           user_id?: string
           version?: number
@@ -557,6 +572,15 @@ export type Database = {
           p_clues: number[]
           p_room: string
           p_solution: number[]
+        }
+        Returns: string
+      }
+      suduel_start_battle: {
+        Args: {
+          p_action: string
+          p_actor: string
+          p_puzzles: Json
+          p_room: string
         }
         Returns: string
       }

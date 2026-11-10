@@ -1,11 +1,11 @@
 # SUDUEL
 
 **Sudoku, but competitive.** React + TypeScript + Vite, based on the SUDUEL V2
-Figma designs. Guest practice, authentication, private Classic Race and Phase 3 Battle are
+Figma designs. Guest practice, authentication, private Classic Race and the V3 Battle arena are
 implemented against the existing Suduel Supabase project.
 
-**The real two-account signup/email and Classic/Battle gameplay acceptance test is still
-pending.** You chose to register and verify those accounts manually. No test
+**Real two-account Classic/Battle gameplay acceptance is still pending.** You confirmed
+both accounts are registered and verified and will run the live test. No test
 emails or account passwords are hardcoded.
 
 ## Run
@@ -27,8 +27,8 @@ can copy `.env.example` and supply:
 
 **Before testing confirmation/recovery emails**, review the hosted Auth redirect,
 SMTP and password settings in the [two-player test guide](docs/phase2-testing.md).
-The connector cannot edit hosted Auth configuration, and no local CLI management
-login was available. Email confirmation was verified as enabled.
+Production Site URL and allowed redirects were configured and checked. Email
+confirmation is enabled; cross-device origins must also be allowed as appropriate.
 
 Guest practice still works without backend configuration. Use your real LAN or
 HTTPS app origin for cross-device invitations, rather than localhost.
@@ -45,18 +45,21 @@ HTTPS app origin for cross-device invitations, rather than localhost.
 - Real profile editing, optional avatar, server-controlled Classic/Battle stats and
   recent match history.
 - Private create/join/invite rooms, two seats, host settings/readiness, shared
-  countdown, server-generated same puzzle, validated moves, hidden opponent
-  entries, synchronized timer, results, rematches and reconnect snapshots.
+  countdown, validated moves, synchronized timer, results, rematches and reconnect
+  snapshots. Classic uses the same puzzle and hides rival entries.
 - Atomic database commands, action deduplication, board versions, participant RLS,
   private solution/board storage, and independently scheduled timeout/grace rules.
 - Battle Mode: one-time unit energy, Fog/Freeze/Scramble/Shield, transactional
   costs/cooldowns/immunity, authenticated events and best-of-three series.
+- Battle V3: two distinct uniquely solvable server-generated puzzles, solver-based
+  difficulty matching, actual read-only rival entries/erasures, central timer,
+  compact arena, phone board switching, and server-authoritative Mistake Pressure.
 - Arcade projectiles/impacts, smoke/frost/glitch/shield overlays, unit/combo
-  feedback, 29 original local sounds, persistent audio/accessibility settings,
+  feedback, 30 original local sounds, persistent audio/accessibility settings,
   final-30/10/5-second warnings, intermissions/results and series rematches.
 
-See the [Phase 3 delivery report](docs/phase3-delivery.md) and
-[two-player acceptance procedure](docs/phase3-testing.md). Rankings, payments and
+See the [V3 implementation and verification record](docs/v3-delivery.md) and
+[two-player acceptance procedure](docs/v3-testing.md). Rankings, payments and
 community remain future work.
 
 ## Routes
@@ -71,7 +74,7 @@ community remain future work.
 | --- | --- |
 | `npm run typecheck` | Strict TypeScript |
 | `npm run lint` | ESLint, no warnings |
-| `npm test` | 45 domain/unit/audio tests |
+| `npm test` | 50 domain/unit/audio tests |
 | `npm run test:e2e` | Public/auth/practice regression and responsive UI fixture tests |
 | `npm run test:multiplayer` | Optional actual two-account Classic and Battle tests; skips without runtime credentials |
 | `npm run check:backend` | Live public Auth settings and unauthorized/private access checks |
@@ -83,9 +86,10 @@ can run `npx playwright install chromium`. `PLAYWRIGHT_CHANNEL` selects an insta
 supported channel. Layout fixtures are test-only and are not live multiplayer
 verification or production application routes.
 
-The database contract suites contain 30 Phase 2 and 68 Phase 3 assertions in
-rolled-back transactions with database-only identities. Both passed against the
-existing backend. They do not simulate real Auth email delivery or two real
+The Phase 2, Phase 3 and V3 database contracts all pass in rolled-back transactions
+with database-only identities. The browser run passes 34 tests and explicitly
+skips the two real-account tests when runtime credentials are absent. These checks
+do not simulate real Auth email delivery or two real
 authenticated Realtime clients.
 
 ## Supabase deployment
@@ -98,9 +102,9 @@ migration versions match hosted history. The `start-race` Edge Function is activ
 and validates actual bearer tokens itself. Its service-role key comes from
 Supabase-managed server environment, never the frontend.
 
-The server's pure engine copy must match `src/features/sudoku/engine.ts`;
-`check:backend` verifies this before smoke checks. If changing engine rules, copy
-the tested source to `supabase/functions/start-race/engine.ts` and redeploy.
+The server's engine and Battle pairing/estimator copies must match
+`src/features/sudoku/engine.ts` and `battlePuzzles.ts`; `check:backend` verifies both.
+Copy changes to the matching files in `supabase/functions/start-race/` and redeploy.
 
 Future CLI deployments require your own authenticated Supabase CLI. This project
 pins CLI 3.1.0; inspect `--help`, target hosted operations explicitly and review
@@ -124,4 +128,5 @@ controlled; local practice records carry no ranked authority.
 
 Source repository: [Reverieasy/Suduel](https://github.com/Reverieasy/Suduel).
 The Supabase resources listed in the delivery report are deployed separately.
-No frontend deployment has been performed.
+The V3 production frontend target is https://suduel.vercel.app; Vercel tracks
+deployment status. Real two-player acceptance remains pending after publication.

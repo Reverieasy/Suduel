@@ -39,7 +39,13 @@ export default function RoomPage() {
       // Its private action feedback is still valid even when its board is stale.
       consumeReply(value)
       if (name === 'leave') navigate('/play')
-      else { accept(value, sentAt); if (value.action?.message) setActionError(value.action.message) }
+      else {
+        accept(value, sentAt)
+        // Battle mistakes already have cell, pressure and recovery feedback in the arena.
+        // A second banner would resize the boards whenever an incorrect number is entered.
+        const battleMistake = name === 'move' && value.battle && value.action?.rejected
+        if (value.action?.message && !battleMistake) setActionError(value.action.message)
+      }
     } catch (failure) { setActionError(failure instanceof Error ? failure.message : 'The action could not be confirmed. Refreshing…'); void refresh(); throw failure }
     finally { inFlight.current = false; setBusy(false) }
   }, [code, navigate, accept, refresh, consumeReply])

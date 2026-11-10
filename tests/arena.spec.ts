@@ -82,15 +82,18 @@ test('Confirmed mistakes preserve entries, recover input, pulse pressure, transf
     player.genuine_mistakes++; player.mistake_pressure=player.genuine_mistakes%3; player.input_recovery_until=new Date(Date.now()+500).toISOString()
     const broken=player.mistake_pressure===0
     if(broken){player.pressure_rewards++;target.energy++;target.version++}
-    s.cursor++; s.action={id:body.p_action_id,cell:body.p_payload.cell,rejected:true,counted:true}
+    s.cursor++; s.action={id:body.p_action_id,cell:body.p_payload.cell,rejected:true,counted:true,message:'Incorrect number. Recovering for 0.5 seconds.'}
     s.events!.push({sequence:s.cursor,match_id:s.match!.id,kind:'mistake_pressure',created_at:new Date().toISOString(),payload:{actor_id:player.user_id,target_id:target.user_id,action_id:body.p_action_id,pressure:player.mistake_pressure,genuine_mistakes:player.genuine_mistakes,break:broken,generated:broken?1:0,stored:broken?1:0}})
   })
   const original=await grid.textContent()
+  const initialBounds=await grid.boundingBox()
   for(let i=0;i<3;i++) {
     await grid.getByRole('button').nth(i*3).click(); await page.keyboard.press('9')
     await expect(grid).toHaveAttribute('aria-disabled','true')
     await expect(grid.locator('.invalid')).toHaveCount(1)
     expect(await grid.textContent()).toBe(original)
+    await expect(page.getByRole('alert')).toHaveCount(0)
+    expect(await grid.boundingBox()).toEqual(initialBounds)
     if(i<2)await expect(pressure).toHaveAttribute('aria-valuenow',String(i+1))
     if(i===1)await expect(pressure).toHaveClass(/pressure-near/)
     if(i===2){

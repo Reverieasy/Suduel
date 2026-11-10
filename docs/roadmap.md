@@ -36,10 +36,12 @@ rematch, with no solution or opponent entries exposed and no client-chosen resul
 
 ## Phase 3 — battle mechanics
 
-Implement versioned rules, one-time reward ledger, secure energy spending,
-Fog/Freeze/Scramble/Shield, expiry/reconnect behavior, compact mobile skills,
-reduced-motion feedback and best-of-three rounds. Test atomic shield/attack races
-and duplicate events. Playtest the proposed costs and timings before balancing.
+Implemented: versioned server rules, one-time reward ledger, transactional skill
+costs/cooldowns, Fog/Freeze/Scramble/Shield, timestamp-based expiry/recovery,
+responsive HUD, arcade effects, 29 original sounds, urgency timer and best-of-three
+series. Database/domain/presentation checks pass. The real two-account acceptance
+and physical-device playtest remain pending. See [delivery](phase3-delivery.md)
+and [test procedure](phase3-testing.md). Costs/timings retain the requested values.
 
 Exit gate: two players complete best-of-three battles with correct energy and
 cleanup under concurrent commands, network interruption, and timer expiry.

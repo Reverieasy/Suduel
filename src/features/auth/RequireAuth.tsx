@@ -6,6 +6,6 @@ export function RequireAuth() {
   const { loading, session } = useAuth()
   const location = useLocation()
   if (loading) return <div className="empty-state" role="status">Restoring your session…</div>
-  if (!backendConfigured || !session || !session.user.email_confirmed_at) return <Navigate replace to={`/login?next=${encodeURIComponent(location.pathname)}`} />
+  if (!backendConfigured || !session || !session.user.email_confirmed_at) return <Navigate replace to={`/login?next=${encodeURIComponent(location.pathname + location.search)}`} />
   return <Outlet />
 }

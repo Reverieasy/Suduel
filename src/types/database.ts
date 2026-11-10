@@ -14,42 +14,189 @@ export type Database = {
   }
   public: {
     Tables: {
+      battle_players: {
+        Row: {
+          attacks_blocked: number
+          cooldown_until: string | null
+          energy: number
+          energy_generated: number
+          energy_stored: number
+          freeze_immunity_until: string | null
+          match_id: string
+          skills_cast: number
+          user_id: string
+          version: number
+        }
+        Insert: {
+          attacks_blocked?: number
+          cooldown_until?: string | null
+          energy?: number
+          energy_generated?: number
+          energy_stored?: number
+          freeze_immunity_until?: string | null
+          match_id: string
+          skills_cast?: number
+          user_id: string
+          version?: number
+        }
+        Update: {
+          attacks_blocked?: number
+          cooldown_until?: string | null
+          energy?: number
+          energy_generated?: number
+          energy_stored?: number
+          freeze_immunity_until?: string | null
+          match_id?: string
+          skills_cast?: number
+          user_id?: string
+          version?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "battle_players_match_id_fkey"
+            columns: ["match_id"]
+            isOneToOne: false
+            referencedRelation: "game_matches"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "battle_players_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      battle_series: {
+        Row: {
+          completed_at: string | null
+          created_at: string
+          id: string
+          outcome: string | null
+          room_id: string
+          rules: Json
+          status: string
+          winner_id: string | null
+        }
+        Insert: {
+          completed_at?: string | null
+          created_at?: string
+          id?: string
+          outcome?: string | null
+          room_id: string
+          rules: Json
+          status?: string
+          winner_id?: string | null
+        }
+        Update: {
+          completed_at?: string | null
+          created_at?: string
+          id?: string
+          outcome?: string | null
+          room_id?: string
+          rules?: Json
+          status?: string
+          winner_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "battle_series_room_id_fkey"
+            columns: ["room_id"]
+            isOneToOne: false
+            referencedRelation: "game_rooms"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "battle_series_winner_id_fkey"
+            columns: ["winner_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      battle_series_players: {
+        Row: {
+          rounds_won: number
+          series_id: string
+          user_id: string
+        }
+        Insert: {
+          rounds_won?: number
+          series_id: string
+          user_id: string
+        }
+        Update: {
+          rounds_won?: number
+          series_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "battle_series_players_series_id_fkey"
+            columns: ["series_id"]
+            isOneToOne: false
+            referencedRelation: "battle_series"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "battle_series_players_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       game_matches: {
         Row: {
+          battle_rules: Json | null
           clues: number[]
           completed_at: string | null
           difficulty: string
           ends_at: string
           id: string
+          mode: string
           outcome: string | null
           previous_match_id: string | null
           room_id: string
+          round_number: number
+          series_id: string | null
           started_at: string
           status: string
           winner_id: string | null
         }
         Insert: {
+          battle_rules?: Json | null
           clues: number[]
           completed_at?: string | null
           difficulty: string
           ends_at: string
           id?: string
+          mode?: string
           outcome?: string | null
           previous_match_id?: string | null
           room_id: string
+          round_number?: number
+          series_id?: string | null
           started_at: string
           status?: string
           winner_id?: string | null
         }
         Update: {
+          battle_rules?: Json | null
           clues?: number[]
           completed_at?: string | null
           difficulty?: string
           ends_at?: string
           id?: string
+          mode?: string
           outcome?: string | null
           previous_match_id?: string | null
           room_id?: string
+          round_number?: number
+          series_id?: string | null
           started_at?: string
           status?: string
           winner_id?: string | null
@@ -70,6 +217,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "game_matches_series_id_fkey"
+            columns: ["series_id"]
+            isOneToOne: false
+            referencedRelation: "battle_series"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "game_matches_winner_id_fkey"
             columns: ["winner_id"]
             isOneToOne: false
@@ -87,6 +241,7 @@ export type Database = {
           expires_at: string
           host_id: string
           id: string
+          mode: string
           status: string
           time_limit: number
         }
@@ -98,6 +253,7 @@ export type Database = {
           expires_at?: string
           host_id: string
           id?: string
+          mode?: string
           status?: string
           time_limit?: number
         }
@@ -109,6 +265,7 @@ export type Database = {
           expires_at?: string
           host_id?: string
           id?: string
+          mode?: string
           status?: string
           time_limit?: number
         }
@@ -134,6 +291,7 @@ export type Database = {
           created_at: string
           kind: string
           match_id: string | null
+          payload: Json
           room_id: string
           sequence: number
         }
@@ -141,6 +299,7 @@ export type Database = {
           created_at?: string
           kind: string
           match_id?: string | null
+          payload?: Json
           room_id: string
           sequence?: never
         }
@@ -148,6 +307,7 @@ export type Database = {
           created_at?: string
           kind?: string
           match_id?: string | null
+          payload?: Json
           room_id?: string
           sequence?: never
         }
@@ -314,6 +474,67 @@ export type Database = {
           {
             foreignKeyName: "room_players_user_id_fkey"
             columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      skill_effects: {
+        Row: {
+          consumed_at: string | null
+          expires_at: string
+          id: string
+          keypad: number[] | null
+          match_id: string
+          region: number | null
+          skill: string
+          source_id: string
+          starts_at: string
+          target_id: string
+        }
+        Insert: {
+          consumed_at?: string | null
+          expires_at: string
+          id?: string
+          keypad?: number[] | null
+          match_id: string
+          region?: number | null
+          skill: string
+          source_id: string
+          starts_at: string
+          target_id: string
+        }
+        Update: {
+          consumed_at?: string | null
+          expires_at?: string
+          id?: string
+          keypad?: number[] | null
+          match_id?: string
+          region?: number | null
+          skill?: string
+          source_id?: string
+          starts_at?: string
+          target_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "skill_effects_match_id_fkey"
+            columns: ["match_id"]
+            isOneToOne: false
+            referencedRelation: "game_matches"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "skill_effects_source_id_fkey"
+            columns: ["source_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "skill_effects_target_id_fkey"
+            columns: ["target_id"]
             isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["id"]

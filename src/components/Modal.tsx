@@ -1,7 +1,7 @@
 import { useEffect, useId, useRef, type ReactNode } from 'react'
 import { X } from 'lucide-react'
 
-export function Modal({ title, children, onClose }: { title: string; children: ReactNode; onClose: () => void }) {
+export function Modal({ title, children, onClose, mobileSheet = false }: { title: string; children: ReactNode; onClose: () => void; mobileSheet?: boolean }) {
   const ref = useRef<HTMLDialogElement>(null)
   const titleId = useId()
   useEffect(() => {
@@ -10,7 +10,7 @@ export function Modal({ title, children, onClose }: { title: string; children: R
     dialog.showModal()
     return () => { dialog.close(); previous?.focus() }
   }, [])
-  return <dialog ref={ref} className="modal" aria-labelledby={titleId} onCancel={(event) => { event.preventDefault(); onClose() }}>
+  return <dialog ref={ref} className={`modal${mobileSheet ? ' mobile-sheet' : ''}`} aria-labelledby={titleId} onCancel={(event) => { event.preventDefault(); onClose() }}>
     <div className="modal-heading"><h2 id={titleId}>{title}</h2><button className="icon-button" onClick={onClose} aria-label="Close dialog"><X size={20} /></button></div>
     {children}
   </dialog>

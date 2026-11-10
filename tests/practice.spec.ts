@@ -94,7 +94,7 @@ for (const width of [390, 768, 1024, 1440]) {
       if (path === '/practice') await expect(page.getByRole('grid')).toBeVisible()
       const dimensions = await page.evaluate(() => ({ scroll: document.documentElement.scrollWidth, width: innerWidth }))
       expect(dimensions.scroll).toBeLessThanOrEqual(dimensions.width)
-      const brokenImages = await page.locator('img').evaluateAll((images) => images.filter((image) => !image.complete || image.naturalWidth === 0).map((image) => image.src))
+      const brokenImages = await page.locator('img').evaluateAll((images) => images.flatMap((image) => image instanceof HTMLImageElement && (!image.complete || image.naturalWidth === 0) ? [image.src] : []))
       expect(brokenImages).toEqual([])
       if ((width === 390 || width === 1440) && (path === '/' || path === '/practice')) {
         await page.evaluate(() => document.fonts.ready)

@@ -1,10 +1,10 @@
-﻿# SUDUEL
+# SUDUEL
 
 **Sudoku, but competitive.** React + TypeScript + Vite, based on the SUDUEL V2
-Figma designs. Guest practice is playable; Phase 2 authentication and private
-Classic Race are implemented against the existing Suduel Supabase project.
+Figma designs. Guest practice, authentication, private Classic Race and Phase 3 Battle are
+implemented against the existing Suduel Supabase project.
 
-**Phase 2's real two-account signup/email and gameplay acceptance test is still
+**The real two-account signup/email and Classic/Battle gameplay acceptance test is still
 pending.** You chose to register and verify those accounts manually. No test
 emails or account passwords are hardcoded.
 
@@ -42,15 +42,22 @@ HTTPS app origin for cross-device invitations, rather than localhost.
   local unassisted personal bests.
 - Real registration, email verification/resend, login/logout, persistent session,
   password recovery and protected multiplayer routes.
-- Real profile editing, optional avatar, server-controlled Classic Race stats and
+- Real profile editing, optional avatar, server-controlled Classic/Battle stats and
   recent match history.
 - Private create/join/invite rooms, two seats, host settings/readiness, shared
   countdown, server-generated same puzzle, validated moves, hidden opponent
   entries, synchronized timer, results, rematches and reconnect snapshots.
 - Atomic database commands, action deduplication, board versions, participant RLS,
   private solution/board storage, and independently scheduled timeout/grace rules.
+- Battle Mode: one-time unit energy, Fog/Freeze/Scramble/Shield, transactional
+  costs/cooldowns/immunity, authenticated events and best-of-three series.
+- Arcade projectiles/impacts, smoke/frost/glitch/shield overlays, unit/combo
+  feedback, 29 original local sounds, persistent audio/accessibility settings,
+  final-30/10/5-second warnings, intermissions/results and series rematches.
 
-Battle attacks/energy, rankings, payments and community remain outside Phase 2.
+See the [Phase 3 delivery report](docs/phase3-delivery.md) and
+[two-player acceptance procedure](docs/phase3-testing.md). Rankings, payments and
+community remain future work.
 
 ## Routes
 
@@ -64,9 +71,9 @@ Battle attacks/energy, rankings, payments and community remain outside Phase 2.
 | --- | --- |
 | `npm run typecheck` | Strict TypeScript |
 | `npm run lint` | ESLint, no warnings |
-| `npm test` | 24 domain/unit tests |
+| `npm test` | 45 domain/unit/audio tests |
 | `npm run test:e2e` | Public/auth/practice regression and responsive UI fixture tests |
-| `npm run test:multiplayer` | Optional actual two-account test; skips without runtime credentials |
+| `npm run test:multiplayer` | Optional actual two-account Classic and Battle tests; skips without runtime credentials |
 | `npm run check:backend` | Live public Auth settings and unauthorized/private access checks |
 | `npm run build` | Typecheck and production bundle in `dist/` |
 | `npm run preview` | Serve production build locally |
@@ -76,9 +83,10 @@ can run `npx playwright install chromium`. `PLAYWRIGHT_CHANNEL` selects an insta
 supported channel. Layout fixtures are test-only and are not live multiplayer
 verification or production application routes.
 
-The database contract suite is `supabase/tests/phase2_contract.sql`: 30 assertions
-in a rolled-back transaction with database-only identities. It was run against
-this project's backend; it does not simulate real Auth email delivery.
+The database contract suites contain 30 Phase 2 and 68 Phase 3 assertions in
+rolled-back transactions with database-only identities. Both passed against the
+existing backend. They do not simulate real Auth email delivery or two real
+authenticated Realtime clients.
 
 ## Supabase deployment
 

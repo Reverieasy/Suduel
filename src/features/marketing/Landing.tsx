@@ -8,7 +8,7 @@ function DecorativeBoard({ opponent = false }: { opponent?: boolean }) {
 
 const featureCards = [
   { symbol: 'VS', title: 'REAL-TIME RACES', description: 'Go head-to-head with a friend on the same Sudoku puzzle.', color: 'blue', phase: 'PRIVATE CLASSIC RACE' },
-  { symbol: 'zap', title: 'SEND ATTACKS', description: 'Complete rows and boxes to charge tactical disruptions.', color: 'red', phase: 'BATTLE SYSTEM · PLANNED' },
+  { symbol: 'zap', title: 'SEND ATTACKS', description: 'Complete rows and boxes to charge tactical disruptions.', color: 'red', phase: 'BATTLE / PRIVATE 1V1' },
   { symbol: '2P', title: 'PLAY WITH FRIENDS', description: 'Create a private room and compete with someone you know.', color: 'yellow', phase: 'VERIFIED ACCOUNTS · PRIVATE ROOMS' },
 ]
 

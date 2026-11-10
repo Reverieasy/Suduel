@@ -42,13 +42,19 @@ export function useRoom(code: string) {
     let disposed = false
     const started = Date.now()
     void roomCommand('join', { code }).then((value) => { if (!disposed) accept(value, started) }).catch((failure) => { if (!disposed) setError(failure instanceof Error ? failure.message : 'Could not join this room.') })
-    const interval = window.setInterval(() => void refresh(), 5000)
     const online = () => { void refresh() }
     const offline = () => setConnection('offline')
     const visibility = () => { if (!document.hidden) void refresh() }
     window.addEventListener('online', online); window.addEventListener('offline', offline); document.addEventListener('visibilitychange', visibility)
-    return () => { disposed = true; mounted.current = false; window.clearInterval(interval); window.removeEventListener('online', online); window.removeEventListener('offline', offline); document.removeEventListener('visibilitychange', visibility) }
+    return () => { disposed = true; mounted.current = false; window.removeEventListener('online', online); window.removeEventListener('offline', offline); document.removeEventListener('visibilitychange', visibility) }
   }, [code, accept, refresh])
+  const battleActive = snapshot?.match?.mode === 'battle' && snapshot.match.status === 'active'
+  useEffect(() => {
+    // Short skills need faster recovery snapshots while Realtime reconnects.
+    const period = battleActive && connection === 'polling' ? 500 : connection === 'offline' ? 2000 : 5000
+    const timer = window.setInterval(() => { if (navigator.onLine) void refresh() }, period)
+    return () => window.clearInterval(timer)
+  }, [battleActive, connection, refresh])
   const roomId = snapshot?.room.id
   useEffect(() => {
     if (!roomId) return

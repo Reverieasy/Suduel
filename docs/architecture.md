@@ -109,7 +109,7 @@ board. Current browser QA covers 390, 768, 1024, and 1440 pixels.
 
 See [multiplayer-plan.md](multiplayer-plan.md). The local engine is reusable pure
 TypeScript, but the practice store and its complete solution must never be reused
-as the authority for multiplayer. A future multiplayer route receives only clues,
+as the authority for multiplayer. The multiplayer route receives only clues,
 its own confirmed entries, and public opponent progress. The competitive
 solution stays on the server until the match is finalized.
 
@@ -117,7 +117,7 @@ solution stays on the server until the match is finalized.
 
 Use Node 24 LTS and `npm ci`, followed by `npm run dev`. Windows PowerShell may
 require `npm.cmd`. Phase 1 requires no environment variables. `.env.example`
-documents future public Supabase configuration; those values are not read yet.
+documents the current public Supabase configuration for authenticated multiplayer.
 
 `npm run build` typechecks and creates `dist/`. `npm test` runs domain tests.
 `npm run test:e2e` starts Vite, tests with a real browser, then stops its server.

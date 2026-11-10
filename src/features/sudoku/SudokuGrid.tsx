@@ -1,12 +1,12 @@
-import { useRef, type KeyboardEvent } from 'react'
+import { memo, useRef, type KeyboardEvent } from 'react'
 import { sameUnit } from './engine'
 
 interface Props {
   clues: number[]; values: number[]; notes: number[][]; selected: number; pencil: boolean
-  invalid: Set<number>; disabled?: boolean; describedBy?: string
+  invalid: Set<number>; hiddenCells?: Set<number>; disabled?: boolean; describedBy?: string
   onSelect: (index: number) => void; onPlace: (digit: number) => void; onToggleNotes: () => void; onUndo?: () => void
 }
-export function SudokuGrid({ clues, values, notes, selected, pencil, invalid, disabled = false, describedBy = 'board-help', onSelect, onPlace, onToggleNotes, onUndo }: Props) {
+export const SudokuGrid = memo(function SudokuGrid({ clues, values, notes, selected, pencil, invalid, hiddenCells, disabled = false, describedBy = 'board-help', onSelect, onPlace, onToggleNotes, onUndo }: Props) {
   const cells = useRef<(HTMLButtonElement | null)[]>([])
   function onKey(event: KeyboardEvent) {
     if (disabled) return
@@ -23,12 +23,12 @@ export function SudokuGrid({ clues, values, notes, selected, pencil, invalid, di
   }
   return <div className={`sudoku-board${pencil ? ' pencil-mode' : ''}`} role="grid" aria-label="Sudoku puzzle" aria-describedby={describedBy} aria-disabled={disabled} onKeyDown={onKey}>
     {Array.from({ length: 9 }, (_, row) => <div role="row" className="sudoku-row" key={row}>{Array.from({ length: 9 }, (_, col) => {
-      const index = row * 9 + col, value = values[index], given = !!clues[index], bad = invalid.has(index)
-      const classes = ['sudoku-cell', given ? 'given' : 'entered', selected === index ? 'selected' : sameUnit(selected, index) ? 'related' : '', value > 0 && value === values[selected] ? 'matching' : '', bad ? 'invalid' : '', col === 2 || col === 5 ? 'box-right' : '', row === 2 || row === 5 ? 'box-bottom' : ''].filter(Boolean).join(' ')
-      const label = `Row ${row + 1}, column ${col + 1}, ${value ? `${value}${given ? ', fixed clue' : ''}` : `empty${notes[index].length ? `, notes ${notes[index].join(', ')}` : ''}`}${bad ? ', incorrect' : ''}`
+      const index = row * 9 + col, concealed = hiddenCells?.has(index), value = concealed ? 0 : values[index], given = !!clues[index], bad = invalid.has(index)
+      const classes = ['sudoku-cell', given ? 'given' : 'entered', selected === index ? 'selected' : sameUnit(selected, index) ? 'related' : '', !hiddenCells?.has(selected) && value > 0 && value === values[selected] ? 'matching' : '', bad ? 'invalid' : '', col === 2 || col === 5 ? 'box-right' : '', row === 2 || row === 5 ? 'box-bottom' : ''].filter(Boolean).join(' ')
+      const label = `Row ${row + 1}, column ${col + 1}, ${concealed ? 'concealed by Fog' : value ? `${value}${given ? ', fixed clue' : ''}` : `empty${notes[index].length ? `, notes ${notes[index].join(', ')}` : ''}`}${bad ? ', incorrect' : ''}`
       return <div role="gridcell" aria-selected={selected === index} aria-invalid={bad || undefined} key={index} className="cell-wrapper"><button ref={(element) => { cells.current[index] = element }} className={classes} aria-label={label} aria-disabled={disabled} tabIndex={index === selected ? 0 : -1} onClick={() => onSelect(index)} onFocus={() => onSelect(index)}>
-        {value || <span className="cell-notes" aria-hidden="true">{Array.from({ length: 9 }, (_, n) => <span key={n}>{notes[index].includes(n + 1) ? n + 1 : ''}</span>)}</span>}
+        {concealed ? '' : value || <span className="cell-notes" aria-hidden="true">{Array.from({ length: 9 }, (_, n) => <span key={n}>{notes[index].includes(n + 1) ? n + 1 : ''}</span>)}</span>}
       </button></div>
     })}</div>)}
   </div>
-}
+})

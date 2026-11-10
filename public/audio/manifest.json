@@ -1,0 +1,118 @@
+{
+  "ui/select": {
+    "seconds": 0.06,
+    "bytes": 2690
+  },
+  "sudoku/valid-number": {
+    "seconds": 0.12,
+    "bytes": 5336
+  },
+  "sudoku/wrong-number": {
+    "seconds": 0.19,
+    "bytes": 8424
+  },
+  "sudoku/row-complete": {
+    "seconds": 0.4,
+    "bytes": 17684
+  },
+  "sudoku/column-complete": {
+    "seconds": 0.4,
+    "bytes": 17684
+  },
+  "sudoku/box-complete": {
+    "seconds": 0.56,
+    "bytes": 24742
+  },
+  "battle/energy-gain": {
+    "seconds": 0.3,
+    "bytes": 13274
+  },
+  "battle/energy-spend": {
+    "seconds": 0.15,
+    "bytes": 6660
+  },
+  "battle/combo-2": {
+    "seconds": 0.5,
+    "bytes": 22094
+  },
+  "battle/combo-3": {
+    "seconds": 0.75,
+    "bytes": 33120
+  },
+  "battle/fog-cast": {
+    "seconds": 0.32,
+    "bytes": 14156
+  },
+  "battle/fog-impact": {
+    "seconds": 0.44,
+    "bytes": 19448
+  },
+  "battle/freeze-cast": {
+    "seconds": 0.3,
+    "bytes": 13274
+  },
+  "battle/freeze-impact": {
+    "seconds": 0.42,
+    "bytes": 18566
+  },
+  "battle/freeze-end": {
+    "seconds": 0.28,
+    "bytes": 12394
+  },
+  "battle/scramble-cast": {
+    "seconds": 0.28,
+    "bytes": 12394
+  },
+  "battle/scramble-impact": {
+    "seconds": 0.38,
+    "bytes": 16802
+  },
+  "battle/scramble-end": {
+    "seconds": 0.25,
+    "bytes": 11070
+  },
+  "battle/shield-activate": {
+    "seconds": 0.48,
+    "bytes": 21212
+  },
+  "battle/shield-block": {
+    "seconds": 0.38,
+    "bytes": 16802
+  },
+  "timer/warning": {
+    "seconds": 0.4,
+    "bytes": 17684
+  },
+  "timer/tick": {
+    "seconds": 0.075,
+    "bytes": 3352
+  },
+  "timer/tick-high": {
+    "seconds": 0.085,
+    "bytes": 3794
+  },
+  "timer/tick-final": {
+    "seconds": 0.17,
+    "bytes": 7542
+  },
+  "timer/countdown": {
+    "seconds": 0.12,
+    "bytes": 5336
+  },
+  "results/round-end": {
+    "seconds": 0.45,
+    "bytes": 19890
+  },
+  "results/victory": {
+    "seconds": 1.5,
+    "bytes": 66194
+  },
+  "results/defeat": {
+    "seconds": 1.05,
+    "bytes": 46350
+  },
+  "results/draw": {
+    "seconds": 0.8,
+    "bytes": 35324
+  }
+}

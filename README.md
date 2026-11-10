@@ -1,161 +1,119 @@
-# SUDUEL
+﻿# SUDUEL
 
-**Solve. Attack. Outplay.**
+**Sudoku, but competitive.** React + TypeScript + Vite, based on the SUDUEL V2
+Figma designs. Guest practice is playable; Phase 2 authentication and private
+Classic Race are implemented against the existing Suduel Supabase project.
 
-SUDUEL is a competitive Sudoku browser game that brings the pressure and strategy
-of an arcade puzzle battle to the classic number grid. Inspired by the multiplayer
-mechanics of Tetris Battle, it is designed around two players solving identical
-puzzles while tracking each other's progress in real time.
+**Phase 2's real two-account signup/email and gameplay acceptance test is still
+pending.** You chose to register and verify those accounts manually. No test
+emails or account passwords are hardcoded.
 
-In Battle Mode, completing rows, columns, and boxes earns energy for temporary
-attacks against an opponent. Players must balance accurate solving, speed, and
-attack timing while preserving the logical integrity of Sudoku.
+## Run
 
-The goal is a lightweight, responsive experience for desktop and mobile, built
-incrementally by a two-person team.
-
-## Project status
-
-**Early development — Phase 1: Foundation.**
-
-The frontend foundation has been initialized locally with React, strict
-TypeScript, Vite, Tailwind CSS, the approved design tokens, a locally bundled
-Inter font, and a minimal branded start screen. Build, lint, and local smoke
-checks passed for that setup.
-
-This GitHub repository currently contains project documentation. The local
-application source has not been uploaded to the repository yet. Gameplay,
-authentication, and online multiplayer are not implemented, and there is no live
-website deployment yet.
-
-The features below describe the planned product.
-
-## Planned game modes
-
-| Mode | Experience |
-| --- | --- |
-| Practice | Solo Sudoku with difficulty selection, pencil marks, erase controls, and a completion timer. |
-| Classic Race | Two players solve the same puzzle without attacks; the first verified completion wins. |
-| Battle | Race to solve the puzzle while earning energy and sending temporary attacks. |
-| Private Match | Invite a friend through a room code or shareable link, choose Classic or Battle rules, and rematch. |
-| Ranked | Future skill-based matchmaking, ratings, rank tiers, and seasonal leaderboards. |
-
-The initial puzzle format is 9×9. A faster 6×6 format is planned as an optional
-addition. Multiplayer will support 1v1 first.
-
-## Battle mechanics
-
-- Completing a row, column, or box earns attack energy; each unit rewards energy
-  only once per player per match.
-- **Fog** temporarily covers a section of the opponent's board.
-- **Scramble** temporarily rearranges the opponent's on-screen number buttons.
-- **Freeze** and **Shield** are planned for later playtesting.
-- Attacks never change the solution, alter original clues, or permanently remove
-  correct values.
-- Opponent progress is visible during competitive matches; their entered numbers
-  remain hidden until the match concludes.
-
-Move validation, energy, attacks, timers, and match results will be controlled by
-the server. Proposed costs, durations, and scoring rules remain subject to testing
-and balancing.
-
-## Player features planned for later phases
-
-- Player profiles, avatars, match history, and statistics.
-- XP, levels, achievements, and unlockable titles.
-- A **Locker** for board skins and profile cosmetics.
-- Competitive ratings, seasonal rankings, and leaderboards.
-- Friends, match invitations, and a moderated community feed.
-- A cosmetic shop with no paid gameplay advantages; real payments are outside
-  the initial MVP.
-
-## Technology
-
-| Area | Stack | Status |
-| --- | --- | --- |
-| Frontend | React, TypeScript, Vite | Initialized locally |
-| Styling | Tailwind CSS, Inter Variable | Configured locally |
-| Code quality | ESLint, TypeScript strict mode | Configured locally |
-| UI and state | shadcn/ui, Lucide React, Zustand, React Router, Motion | Planned as needed |
-| Backend | Supabase PostgreSQL, Auth, Realtime, Storage, Edge Functions | Planned |
-| Testing | Vitest, React Testing Library, Playwright | Planned with feature implementation |
-| Hosting and collaboration | Vercel, Supabase, GitHub, Figma | Planned deployment and design workflow; GitHub repository created |
-
-The Sudoku engine will be pure TypeScript, independent of React. The board will
-use React components and CSS Grid. The multiplayer architecture will use validated
-server state, Realtime Broadcast for accepted match events, and Presence for
-connection status.
-
-## Visual direction
-
-A minimalist arcade interface with dark navy surfaces, clear typography, sharp
-Sudoku grids, thin borders, and restrained animation.
-
-| Purpose | Color |
-| --- | --- |
-| Main background | `#0B1422` |
-| Secondary background | `#111F30` |
-| Cards | `#162538` |
-| Local player / primary blue | `#2196F3` |
-| Opponent red | `#F04452` |
-| Energy / accent yellow | `#FFCC33` |
-| Success green | `#2EC78A` |
-| Primary text | `#F5F7FA` |
-| Secondary text | `#94A3B8` |
-| Borders | `#2B4057` |
-
-Readability and competitive fairness guide the design. Planned accessibility
-features include keyboard controls, visible focus states, touch-friendly inputs,
-reduced motion, and status indicators that do not rely on color alone.
-
-## Development roadmap
-
-| Phase | Focus | Status |
-| --- | --- | --- |
-| 1 — Foundation | Frontend setup, website layout, Sudoku engine, and playable local Practice Mode | In progress; setup completed locally |
-| 2 — Multiplayer Core | Private rooms, synchronized matches, results, rematches, and reconnection | Planned |
-| 3 — Battle System | Energy, combos, Fog, Scramble, cooldowns, and effect expiration | Planned |
-| 4 — Identity and Progression | Profiles, XP, achievements, titles, skins, and Locker | Planned |
-| 5 — Competitive Platform | Matchmaking, ratings, ranked validation, and seasonal leaderboards | Planned |
-| 6 — Community and Monetization | Friends, moderated social features, and secure cosmetic purchases | Planned |
-
-The first milestone is a fully playable local Sudoku experience. Ranked play and
-later platform features follow only after the core game and match reliability
-have been tested.
-
-## Local frontend development
-
-These commands apply to the existing local frontend workspace, where
-`package.json` and `package-lock.json` are present. They will apply to a repository
-checkout once the application source is uploaded.
-
-Use **Node.js 24 LTS** and **npm**:
+Use Node 24 LTS and npm:
 
 ```sh
 npm ci
 npm run dev
 ```
 
-Open the local URL printed by Vite. In Windows PowerShell, use `npm.cmd` instead
-of `npm` if the execution policy blocks `npm.ps1`.
+In Windows PowerShell, use `npm.cmd` if needed. The ignored `.env.local` is already
+configured with the existing project's public URL/publishable key. New checkouts
+can copy `.env.example` and supply:
+
+- `VITE_SUPABASE_URL`
+- `VITE_SUPABASE_PUBLISHABLE_KEY`
+- `VITE_APP_URL` (local default `http://localhost:5173`)
+
+**Before testing confirmation/recovery emails**, review the hosted Auth redirect,
+SMTP and password settings in the [two-player test guide](docs/phase2-testing.md).
+The connector cannot edit hosted Auth configuration, and no local CLI management
+login was available. Email confirmation was verified as enabled.
+
+Guest practice still works without backend configuration. Use your real LAN or
+HTTPS app origin for cross-device invitations, rather than localhost.
+
+## Implemented
+
+- Responsive V2 landing, centered SUDUEL lettering, locally bundled fonts, shared
+  tokens, navigation, guide, mode selection, feature roadmap and error pages.
+- Valid uniquely solvable 9x9 guest practice with worker generation, notes,
+  erase/undo, keyboard/touch controls, mistakes, hints, pause/restart, results and
+  local unassisted personal bests.
+- Real registration, email verification/resend, login/logout, persistent session,
+  password recovery and protected multiplayer routes.
+- Real profile editing, optional avatar, server-controlled Classic Race stats and
+  recent match history.
+- Private create/join/invite rooms, two seats, host settings/readiness, shared
+  countdown, server-generated same puzzle, validated moves, hidden opponent
+  entries, synchronized timer, results, rematches and reconnect snapshots.
+- Atomic database commands, action deduplication, board versions, participant RLS,
+  private solution/board storage, and independently scheduled timeout/grace rules.
+
+Battle attacks/energy, rankings, payments and community remain outside Phase 2.
+
+## Routes
+
+`/`, `/play`, `/practice`, `/how-to-play`, `/features`, `/login`, `/register`,
+`/forgot-password`, `/reset-password`, `/auth/callback`, `/profile`, `/rooms/new`,
+`/room/:code`. Multiplayer/profile routes require a verified authenticated user.
+
+## Verification commands
 
 | Command | Purpose |
 | --- | --- |
-| `npm run dev` | Start the Vite development server |
-| `npm run typecheck` | Check TypeScript |
-| `npm run lint` | Run ESLint with no warnings allowed |
-| `npm run build` | Check types and create the production build in `dist/` |
-| `npm run preview` | Serve the production build locally |
+| `npm run typecheck` | Strict TypeScript |
+| `npm run lint` | ESLint, no warnings |
+| `npm test` | 24 domain/unit tests |
+| `npm run test:e2e` | Public/auth/practice regression and responsive UI fixture tests |
+| `npm run test:multiplayer` | Optional actual two-account test; skips without runtime credentials |
+| `npm run check:backend` | Live public Auth settings and unauthorized/private access checks |
+| `npm run build` | Typecheck and production bundle in `dist/` |
+| `npm run preview` | Serve production build locally |
 
-No environment variables or external service connections are required for the
-current frontend foundation.
+Browser tests use installed Edge on Windows and Chromium elsewhere. Other systems
+can run `npx playwright install chromium`. `PLAYWRIGHT_CHANNEL` selects an installed
+supported channel. Layout fixtures are test-only and are not live multiplayer
+verification or production application routes.
 
-## Specification and documentation
+The database contract suite is `supabase/tests/phase2_contract.sql`: 30 assertions
+in a rolled-back transaction with database-only identities. It was run against
+this project's backend; it does not simulate real Auth email delivery.
 
-The [master project specification](SUDUEL_MASTER_SPEC.md) is the source of truth
-for game rules, architecture, security requirements, and phase completion criteria.
+## Supabase deployment
 
-In the local frontend workspace, `docs/design-system.md` documents token usage,
-and `src/styles/index.css` defines the shared theme.
+Existing project: **Suduel**, `curftgyefvgakxnmrqye`, in the connected
+**Reveries_App** organization. No new project was created.
 
-**SUDUEL — Solve. Attack. Outplay.**
+Applied migrations and server function source are under `supabase/`. Local SQL
+migration versions match hosted history. The `start-race` Edge Function is active
+and validates actual bearer tokens itself. Its service-role key comes from
+Supabase-managed server environment, never the frontend.
+
+The server's pure engine copy must match `src/features/sudoku/engine.ts`;
+`check:backend` verifies this before smoke checks. If changing engine rules, copy
+the tested source to `supabase/functions/start-race/engine.ts` and redeploy.
+
+Future CLI deployments require your own authenticated Supabase CLI. This project
+pins CLI 3.1.0; inspect `--help`, target hosted operations explicitly and review
+configuration diffs before applying changes. Do not push the entire generated
+local config blindly over hosted Auth/SMTP settings.
+
+## Handoff
+
+- [Phase 2 delivery, schema, security and verification](docs/phase2-delivery.md)
+- [Two-account/two-device test procedure and required settings](docs/phase2-testing.md)
+- [Phase 1 implementation architecture](docs/architecture.md)
+- [Design system](docs/design-system.md)
+- [Original multiplayer proposal](docs/multiplayer-plan.md)
+- [Phased roadmap](docs/roadmap.md)
+- [Phase 1 verification record](docs/verification.md)
+- [Original master specification](SUDUEL_MASTER_SPEC.md)
+
+Guest practice solutions are intentionally local. Competitive solutions stay in a
+non-exposed private schema. Competitive progress/outcomes/statistics are server
+controlled; local practice records carry no ranked authority.
+
+Source repository: [Reverieasy/Suduel](https://github.com/Reverieasy/Suduel).
+The Supabase resources listed in the delivery report are deployed separately.
+No frontend deployment has been performed.

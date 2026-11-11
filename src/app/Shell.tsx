@@ -6,7 +6,7 @@ import { useAuth } from '../features/auth/store'
 import { AudioSettings } from '../features/audio/AudioSettings'
 import { requireBackend } from '../lib/supabase'
 
-const links = [{ to: '/', label: 'Home' }, { to: '/how-to-play', label: 'How to Play' }, { to: '/features', label: 'Features' }, { to: '/play', label: 'Game Modes' }]
+const links = [{ to: '/', label: 'Home' }, { to: '/play', label: 'Play' }, { to: '/how-to-play', label: 'How to Play' }, { to: '/features', label: 'Features' }, { to: '/leaderboard', label: 'Leaderboard' }, { to: '/community', label: 'Community' }, { to: '/locker', label: 'Locker' }]
 
 export function Shell() {
   const [menu, setMenu] = useState(false)
@@ -24,7 +24,7 @@ export function Shell() {
   const previousPath = useRef(location.pathname)
   useEffect(() => {
     if (previousPath.current !== location.pathname) { main.current?.focus(); window.scrollTo(0, 0); previousPath.current = location.pathname }
-    const name = links.find((l) => l.to === location.pathname)?.label ?? (location.pathname === '/practice' ? 'Practice' : location.pathname === '/login' ? 'Log In' : location.pathname === '/register' ? 'Sign Up' : location.pathname.startsWith('/room') ? 'Private Match' : location.pathname === '/profile' ? 'Profile' : location.pathname.includes('password') ? 'Password Recovery' : location.pathname === '/auth/callback' ? 'Email Verification' : 'Page Not Found')
+    const name = links.find((l) => l.to === location.pathname)?.label ?? (location.pathname === '/practice' ? 'Practice' : location.pathname === '/how-to-play' ? 'How to Play' : location.pathname === '/features' ? 'Features' : location.pathname === '/login' ? 'Log In' : location.pathname === '/register' ? 'Sign Up' : location.pathname.startsWith('/room') ? 'Private Match' : location.pathname.startsWith('/players/') ? 'Player' : location.pathname === '/profile' ? 'Profile' : location.pathname.includes('password') ? 'Password Recovery' : location.pathname === '/auth/callback' ? 'Email Verification' : 'Page Not Found')
     document.title = `${name} · SUDUEL`
   }, [location.pathname])
   return <div className="app-shell">

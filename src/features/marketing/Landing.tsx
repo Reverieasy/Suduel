@@ -25,7 +25,7 @@ export function Landing() {
   return <><section className="hero" aria-labelledby="hero-heading">
     <HomeAmbience />
     <DecorativeBoard /><DecorativeBoard opponent />
-    <div className="hero-pixels" aria-hidden="true">{Array.from({ length: 24 }, (_, i) => <i key={i} style={{ left: `${14 + (i * 17 % 73)}%`, top: `${8 + (i * 31 % 85)}%`, '--drift-x': `${(i%2?1:-1)*(8+i%4*5)}px`, '--drift-y': `${-18-i%5*6}px`, '--drift-time': `${12+i%5*3}s`, '--drift-delay': `${-i*1.7}s` } as CSSProperties} />)}</div>
+    <div className="hero-pixels" aria-hidden="true">{Array.from({ length: 36 }, (_, i) => <i key={i} style={{ left: `${7 + (i * 17 % 86)}%`, top: `${5 + (i * 31 % 90)}%`, '--drift-x': `${(i%2?1:-1)*(12+i%5*6)}px`, '--drift-y': `${-24-i%6*7}px`, '--drift-time': `${9+i%7*1.5}s`, '--drift-delay': `${-i*1.35}s` } as CSSProperties} />)}</div>
     <div className="hero-content"><span className="eyebrow hero-eyebrow"><i className="status-dot" /> THE NEXT MOVE IS YOURS</span>
       <h1 id="hero-heading"><Wordmark large /></h1><h2>Sudoku, but <span className="blue">competitive.</span></h2>
       <p className="hero-mantra">SOLVE <span>·</span> ATTACK <span>·</span> SURVIVE <span>·</span> OUTPLAY</p>

@@ -16,6 +16,7 @@ const LockerPage = lazy(() => import('./features/phase4/LockerPage'))
 const LeaderboardPage = lazy(() => import('./features/phase4/LeaderboardPage'))
 const CommunityPage = lazy(() => import('./features/phase4/CommunityPage'))
 const PublicProfilePage = lazy(() => import('./features/phase4/PublicProfilePage'))
+const RankedPage = lazy(() => import('./features/ranked/RankedPage'))
 
 export default function App() {
   return <BrowserRouter><Routes><Route element={<Shell />}>
@@ -37,6 +38,7 @@ export default function App() {
       <Route path="leaderboard" element={<Suspense fallback={<div className="empty-state" role="status">Loading leaderboard…</div>}><LeaderboardPage /></Suspense>} />
       <Route path="community" element={<Suspense fallback={<div className="empty-state" role="status">Loading community…</div>}><CommunityPage /></Suspense>} />
       <Route path="players/:username" element={<Suspense fallback={<div className="empty-state" role="status">Loading player…</div>}><PublicProfilePage /></Suspense>} />
+      <Route path="ranked" element={<Suspense fallback={<div className="empty-state" role="status">Loading ranked matchmaking…</div>}><RankedPage /></Suspense>} />
     </Route>
     <Route path="*" element={<NotFound />} />
   </Route></Routes></BrowserRouter>

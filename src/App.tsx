@@ -7,6 +7,7 @@ import { Features, HowToPlay, NotFound } from './features/marketing/InfoPages'
 import { AuthPage } from './features/auth/AuthPage'
 import { AuthCallback } from './features/auth/AuthCallback'
 import { RequireAuth } from './features/auth/RequireAuth'
+import { OnlinePlayersPresence } from './features/presence/OnlinePlayers'
 
 const Practice = lazy(() => import('./features/sudoku/Practice'))
 const CreateRoom = lazy(() => import('./features/multiplayer/CreateRoom'))
@@ -19,7 +20,7 @@ const PublicProfilePage = lazy(() => import('./features/phase4/PublicProfilePage
 const RankedPage = lazy(() => import('./features/ranked/RankedPage'))
 
 export default function App() {
-  return <BrowserRouter><Routes><Route element={<Shell />}>
+  return <BrowserRouter><OnlinePlayersPresence/><Routes><Route element={<Shell />}>
     <Route index element={<Landing />} />
     <Route path="play" element={<Modes />} />
     <Route path="practice" element={<Suspense fallback={<div role="status" className="empty-state">Loading practice…</div>}><Practice /></Suspense>} />

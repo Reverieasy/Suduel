@@ -4,6 +4,7 @@ import { usePreferences } from './preferences'
 import { usePractice } from '../sudoku/store'
 import { useReducedMotion } from './useReducedMotion'
 import { unitCells } from '../battle/rules'
+import { BackgroundMusic } from './BackgroundMusic'
 
 export function AudioSystem() {
   const reduced = useReducedMotion()
@@ -34,5 +35,5 @@ export function AudioSystem() {
     })
     return () => { document.removeEventListener('pointerdown', unlock, true); document.removeEventListener('keydown', unlock, true); document.removeEventListener('visibilitychange', visibility); unsubscribe(); practice(); audioManager.dispose() }
   }, [])
-  return null
+  return <BackgroundMusic/>
 }

@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState, type ReactNode } from 'react'
 import { Link } from 'react-router'
 import { Eraser, Pencil, Settings, LogOut, RefreshCw } from 'lucide-react'
 import { Avatar } from '../../components/Avatar'
@@ -16,9 +16,10 @@ import { useFeedback } from './feedback'
 import { fogCells, validKeypad, NORMAL_KEYPAD, displayDigit, canonicalDigit } from './rules'
 import { audioManager } from '../audio/manager'
 import { RowCelebration } from './RowCelebration'
+import { FreezeAtmosphere } from './FreezeAtmosphere'
 
-interface Props { snapshot: RoomSnapshot; userId: string; now: number; busy: boolean; online: boolean; connection: string; command: (name: string, payload?: Record<string,string|number|boolean>) => Promise<void>; forfeit: () => void; menu: () => void; resync?: () => void }
-export function BattleArena({ snapshot: s, userId, now, busy, online, connection, command, forfeit, menu, resync }: Props) {
+interface Props { snapshot: RoomSnapshot; userId: string; now: number; busy: boolean; online: boolean; connection: string; command: (name: string, payload?: Record<string,string|number|boolean>) => Promise<void>; forfeit: () => void; menu: () => void; resync?: () => void; chat?: ReactNode }
+export function BattleArena({ snapshot: s, userId, now, busy, online, connection, command, forfeit, menu, resync, chat }: Props) {
   const match = s.match!, board = s.board!, battle = s.battle!
   const me = s.players.find((p) => p.user_id === userId)!, rival = s.players.find((p) => p.user_id !== userId)!
   const own = s.progress.find((p) => p.user_id === userId)!, other = s.progress.find((p) => p.user_id !== userId)!
@@ -60,7 +61,8 @@ export function BattleArena({ snapshot: s, userId, now, busy, online, connection
   const ownPercent = progressPercent(own.correct_cells,match.clues), rivalPercent = progressPercent(other.correct_cells,rivalBoard.clues)
   const rivalOffline = now-Date.parse(rival.last_seen)>15000
   return <div className={`battle-arena-v3${rivalView?' viewing-rival':''}`}>
-    <header className="battle-header"><Link to="/" aria-label="SUDUEL home"><Wordmark /></Link><span className="arena-mode">BATTLE · ROUND {match.round_number}</span><span className={`battle-connection ${online?'green':'yellow'}`} role="status">{connection==='live'?'LIVE':online?'SYNCING':'OFFLINE'}</span>{resync&&<button className="icon-button" onClick={resync} aria-label="Resync boards"><RefreshCw size={15}/></button>}<button className="icon-button" onClick={menu} aria-label="Match menu"><Settings size={18}/></button><button className="quiet-button" onClick={forfeit} disabled={busy} aria-label="Leave Battle series"><LogOut size={15}/><span>LEAVE</span></button></header>
+    <FreezeAtmosphere active={frozen}/>
+    <header className="battle-header"><Link to="/" aria-label="SUDUEL home"><Wordmark /></Link><span className="arena-mode">BATTLE · ROUND {match.round_number}</span><span className={`battle-connection ${online?'green':'yellow'}`} role="status">{connection==='live'?'LIVE':online?'SYNCING':'OFFLINE'}</span>{chat}{resync&&<button className="icon-button" onClick={resync} aria-label="Resync boards"><RefreshCw size={15}/></button>}<button className="icon-button" onClick={menu} aria-label="Match menu"><Settings size={18}/></button><button className="quiet-button" onClick={forfeit} disabled={busy} aria-label="Leave Battle series"><LogOut size={15}/><span>LEAVE</span></button></header>
     <div className="battle-view-switch" role="group" aria-label="Choose board view"><button aria-pressed={!rivalView} onClick={() => setRivalView(false)}>YOUR GRID · {ownPercent}%</button><button aria-pressed={rivalView} onClick={() => setRivalView(true)}>RIVAL GRID · {rivalPercent}%</button></div>
     <div className="battle-board-arena"><AttackFlights matchId={match.id}/><PressureTransfers matchId={match.id} userId={userId}/>
       <section className="battle-board-panel local-battle-panel" aria-label="Your battle board"><div className="battle-player-heading"><Avatar name={me.username} url={me.avatar_url}/><div><h2>YOU <small>@{me.username}</small></h2><progress max={100} value={ownPercent} aria-label="Your progress"/></div><strong className="blue">{ownPercent}%</strong></div>

@@ -5,7 +5,7 @@
 .battle-live > .page-heading,.battle-live > .room-connection { display: none; }
 .battle-live > .form-error { flex: 0 0 auto; padding: 6px 12px; margin: 0; max-height: 46px; overflow: auto; font-size: 12px; }
 .battle-arena-v3 { flex: 1; min-height: 0; display: grid; grid-template-rows: 36px minmax(0,1fr) 72px 25px 52px; gap: 7px; }
-.battle-header { display: flex; align-items: center; gap: 14px; min-width: 0; }
+.battle-header { position: relative; z-index: 9; display: flex; align-items: center; gap: 14px; min-width: 0; }
 .battle-header .wordmark { font-size: 22px; }
 .battle-header > a { margin-right: auto; }
 .arena-mode,.battle-connection { font: 700 11px var(--font-game); }
@@ -66,6 +66,7 @@
 .pressure-near .pressure-segments { animation: pressure-warning 1800ms ease-in-out infinite; }
 .pressure-broken .filled { background: #ffd03b; border-color: #ffe186; }
 .battle-arena-v3 .battle-toolbar { grid-template-columns: minmax(165px,.85fr) repeat(4,minmax(0,1fr)); padding: 6px 10px; gap: 10px; margin: 0; max-width: none; }
+.battle-arena-v3 .battle-toolbar { position: relative; z-index: 9; }
 .battle-arena-v3 .energy-meter { padding: 2px 6px; grid-column: auto; }
 .battle-arena-v3 .energy-meter .eyebrow { font-size: 9px; }
 .battle-arena-v3 .energy-meter strong { font-size: 19px; }

@@ -33,6 +33,24 @@ test('Saved legacy Fog still conceals its original box', async ({page}) => {
   await expect(page.locator('.fog-board')).toHaveCount(0)
 })
 
+test('Fog smoke and ice frames stay visual, keep controls stable, and honor reduced motion',async({page},testInfo)=>{
+  await page.goto('/tests/fixtures/room-harness.html?view=fog&ttl=60000')
+  await expect(page.locator('.fog-caption strong')).toHaveText('Fog')
+  await expect(page.locator('.fog-plume')).toHaveCount(4)
+  await expect(page.locator('.fog-plume').first()).not.toHaveCSS('animation-name','none')
+  await page.evaluate(()=>document.fonts.ready)
+  await page.screenshot({path:testInfo.outputPath('volumetric-fog.png'),fullPage:true})
+  await page.emulateMedia({reducedMotion:'reduce'})
+  await expect(page.locator('.fog-plume').first()).toHaveCSS('animation-name','none')
+  await page.goto('/tests/fixtures/room-harness.html?view=freeze&ttl=60000')
+  await expect(page.locator('[data-screen-effect=freeze]')).toBeVisible()
+  await expect(page.locator('[data-screen-effect=freeze]')).toHaveCSS('pointer-events','none')
+  await expect(page.locator('.frost-flurries')).toBeHidden()
+  await expect(page.getByRole('button',{name:'Match menu',exact:true})).toBeEnabled()
+  await page.evaluate(()=>document.fonts.ready)
+  await page.screenshot({path:testInfo.outputPath('crystalline-freeze-reduced.png'),fullPage:true})
+})
+
 test('Freeze disables entry only while valid; the same grid resumes without reset', async ({ page }) => {
   await page.goto('/tests/fixtures/room-harness.html?view=freeze&ttl=1600')
   const grid = page.getByRole('grid', { name: 'Sudoku puzzle', exact: true }), cell = grid.getByRole('button').nth(0)
@@ -91,11 +109,11 @@ test('Audio decodes local assets after interaction, preferences persist, and mut
   await page.getByRole('button', { name: 'Fixture sound settings' }).click()
   const sheet = await page.getByRole('dialog').boundingBox()
   expect(sheet!.width).toBe(390); expect(Math.round(sheet!.y+sheet!.height)).toBe(844)
-  await expect.poll(() => page.evaluate(() => performance.getEntriesByType('resource').filter((entry) => entry.name.endsWith('.wav')).length)).toBe(30)
+  await expect.poll(() => page.evaluate(() => performance.getEntriesByType('resource').filter((entry) => entry.name.endsWith('.wav') && !entry.name.includes('/ambience/')).length)).toBe(30)
   const decoded = await page.evaluate(async () => {
     const context = new AudioContext()
     // Fetch URLs from the actual preloaded registry to validate the browser codec path.
-    const urls = performance.getEntriesByType('resource').filter((entry) => entry.name.endsWith('.wav')).map((entry) => entry.name)
+    const urls = performance.getEntriesByType('resource').filter((entry) => entry.name.endsWith('.wav') && !entry.name.includes('/ambience/')).map((entry) => entry.name)
     const durations = await Promise.all(urls.map(async (url) => (await context.decodeAudioData(await fetch(url).then((r) => r.arrayBuffer()))).duration))
     await context.close(); return durations
   })

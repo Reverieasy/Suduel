@@ -57,21 +57,27 @@ HTTPS app origin for cross-device invitations, rather than localhost.
 - Arcade projectiles/impacts, smoke/frost/glitch/shield overlays, unit/combo
   feedback, 30 original local sounds, persistent audio/accessibility settings,
   final-30/10/5-second warnings, intermissions/results and series rematches.
-- Board-digit Scramble (4 energy), Shield (5 energy), and a homepage ambience
-  loop with mute controls and subtle background-only motion. Reduced motion is
+- Board-digit Scramble (4 energy), Shield (5 energy), and an app-wide ambience
+  loop with mute controls and subtle homepage background motion. Reduced motion is
   respected; header/footer wordmarks match the red “EL” of the homepage title.
 - Full-board Fog, 3.5-second Freeze, and original arcade row-completion popups
   that celebrate confirmed progress without shifting the arena.
+- Animated smoke, crystalline ice and a screen-edge Freeze effect; persistent
+  background music across routes and matches; live connected-player counts.
+- Private opponent chat, server-verified senders, retry deduplication and rate
+  limits; leaderboard account names link to their correct public profiles.
 
 See the [V3 implementation and verification record](docs/v3-delivery.md) and
-[two-player acceptance procedure](docs/v3-testing.md). Rankings, payments and
-community remain future work.
+[two-player acceptance procedure](docs/v3-testing.md). See also the
+[UI, presence, music and chat verification record](docs/ui-social-audio-update.md).
+Payments remain future work.
 
 ## Routes
 
 `/`, `/play`, `/practice`, `/how-to-play`, `/features`, `/login`, `/register`,
 `/forgot-password`, `/reset-password`, `/auth/callback`, `/profile`, `/rooms/new`,
-`/room/:code`. Multiplayer/profile routes require a verified authenticated user.
+`/room/:code`, `/ranked`, `/leaderboard`, `/players/:username`, `/community`,
+`/locker`. Multiplayer/profile routes require a verified authenticated user.
 
 ## Verification commands
 
@@ -92,7 +98,7 @@ supported channel. Layout fixtures are test-only and are not live multiplayer
 verification or production application routes.
 
 The Phase 2, Phase 3 and V3 database contracts all pass in rolled-back transactions
-with database-only identities. The browser run passes 42 tests and explicitly
+with database-only identities. The browser run passes 45 tests and explicitly
 skips the two real-account tests when runtime credentials are absent. These checks
 do not simulate real Auth email delivery or two real
 authenticated Realtime clients.

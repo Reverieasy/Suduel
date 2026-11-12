@@ -1,26 +1,26 @@
 import { expect, test } from '@playwright/test'
 
-test('Homepage music waits for interaction, loops quietly, persists mute and stops on navigation', async ({page}) => {
+test('Homepage music waits for interaction, loops quietly, persists mute and continues into gameplay', async ({page}) => {
   await page.goto('/')
-  const audio=page.getByTestId('home-ambience')
+  const audio=page.getByTestId('background-music')
   await expect.poll(()=>audio.evaluate((node)=>(node as HTMLAudioElement).paused)).toBe(true)
-  await page.getByRole('button',{name:'Play homepage music',exact:true}).click()
+  await page.getByRole('button',{name:'Play background music',exact:true}).click()
   await expect.poll(()=>audio.evaluate((node)=>(node as HTMLAudioElement).paused)).toBe(false)
   expect(await audio.evaluate((node)=>({loop:(node as HTMLAudioElement).loop,volume:(node as HTMLAudioElement).volume}))).toEqual({loop:true,volume:.65*.18})
   await page.evaluate(()=>{Object.defineProperty(document,'hidden',{configurable:true,value:true});document.dispatchEvent(new Event('visibilitychange'))})
   await expect.poll(()=>audio.evaluate((node)=>(node as HTMLAudioElement).paused)).toBe(true)
   await page.evaluate(()=>{Object.defineProperty(document,'hidden',{configurable:true,value:false});document.dispatchEvent(new Event('visibilitychange'))})
   await expect.poll(()=>audio.evaluate((node)=>(node as HTMLAudioElement).paused)).toBe(false)
-  await page.getByRole('button',{name:'Mute homepage music',exact:true}).click()
+  await page.getByRole('button',{name:'Mute background music',exact:true}).click()
   await expect.poll(()=>audio.evaluate((node)=>(node as HTMLAudioElement).paused)).toBe(true)
   await page.reload(); await page.locator('h1').click()
   await expect.poll(()=>audio.evaluate((node)=>(node as HTMLAudioElement).paused)).toBe(true)
-  await page.getByRole('button',{name:'Play homepage music',exact:true}).click()
+  await page.getByRole('button',{name:'Play background music',exact:true}).click()
   await expect.poll(()=>audio.evaluate((node)=>(node as HTMLAudioElement).paused)).toBe(false)
   const handle=await audio.elementHandle()
-  await page.getByRole('link',{name:/Warm up with free solo practice/}).click()
+  await page.getByRole('link',{name:/Warm up with solo practice/}).click()
   await expect(page.getByRole('grid')).toBeVisible()
-  expect(await handle!.evaluate((node)=>(node as HTMLAudioElement).paused)).toBe(true)
+  expect(await handle!.evaluate((node)=>node.isConnected && !(node as HTMLAudioElement).paused)).toBe(true)
 })
 
 test('Only homepage background decor moves; reduced motion stops it and all wordmarks use red EL', async ({page}) => {

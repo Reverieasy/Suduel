@@ -6,7 +6,7 @@ export function AudioSettings({ onClose }: { onClose: () => void }) {
   const settings = usePreferences()
   return <Modal title="SOUND & ACCESSIBILITY" onClose={onClose} mobileSheet><div className="game-settings">
     <label className="toggle-setting"><span>Game sound</span><input type="checkbox" checked={settings.sound} onChange={(e) => { settings.update({ sound: e.target.checked }); if (e.target.checked) audioManager.unlock() }} /></label>
-    <label className="toggle-setting"><span>Homepage music</span><input type="checkbox" checked={settings.homeMusic} onChange={(e) => settings.update({ homeMusic: e.target.checked })} /></label>
+    <label className="toggle-setting"><span>Background music</span><input type="checkbox" checked={settings.homeMusic} onChange={(e) => settings.update({ homeMusic: e.target.checked })} /></label>
     <label>MASTER VOLUME <output>{Math.round(settings.masterVolume * 100)}%</output><input aria-label="Master volume" type="range" min="0" max="1" step="0.05" value={settings.masterVolume} onChange={(e) => settings.update({ masterVolume: Number(e.target.value) })} /></label>
     <label>EFFECTS VOLUME <output>{Math.round(settings.effectsVolume * 100)}%</output><input aria-label="Effects volume" type="range" min="0" max="1" step="0.05" value={settings.effectsVolume} onChange={(e) => settings.update({ effectsVolume: Number(e.target.value) })} /></label>
     <label className="toggle-setting"><span>Countdown sounds</span><input type="checkbox" checked={settings.countdownSound} onChange={(e) => settings.update({ countdownSound: e.target.checked })} /></label>

@@ -1,12 +1,11 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef } from 'react'
 import { Volume2, VolumeX } from 'lucide-react'
 import { usePreferences } from './preferences'
 
-export function HomeAmbience() {
+const START_MUSIC = 'suduel:start-background-music'
+
+export function BackgroundMusic() {
   const element = useRef<HTMLAudioElement>(null), interacted = useRef(false)
-  const [playing,setPlaying] = useState(false)
-  const enabled = usePreferences((s) => s.sound && s.homeMusic)
-  const update = usePreferences((s) => s.update)
   useEffect(() => {
     const audio=element.current!
     let disposed=false
@@ -28,13 +27,23 @@ export function HomeAmbience() {
     document.addEventListener('pointerdown',gesture,{passive:true})
     document.addEventListener('keydown',gesture)
     document.addEventListener('visibilitychange',sync)
-    const unsubscribe=usePreferences.subscribe(sync)
+    const start = () => { interacted.current=true; sync() }
+    document.addEventListener(START_MUSIC,start)
+    const unsubscribe=usePreferences.subscribe((next,previous) => {
+      if(next.sound!==previous.sound || next.homeMusic!==previous.homeMusic || next.masterVolume!==previous.masterVolume)sync()
+    })
     sync()
     return () => {
       disposed=true; unsubscribe()
       document.removeEventListener('pointerdown',gesture); document.removeEventListener('keydown',gesture); document.removeEventListener('visibilitychange',sync)
+      document.removeEventListener(START_MUSIC,start)
       audio.pause(); audio.removeAttribute('src'); audio.load()
     }
   },[])
-  return <><audio ref={element} loop preload="none" aria-hidden="true" data-testid="home-ambience" onPlay={() => setPlaying(true)} onPause={() => setPlaying(false)}/><button className="home-music-control" data-home-music-control aria-label={enabled&&playing?'Mute homepage music':'Play homepage music'} aria-pressed={enabled&&playing} onClick={() => { interacted.current=true; update(enabled&&playing ? {homeMusic:false} : {homeMusic:true,sound:true}) }}>{enabled&&playing?<Volume2 size={15}/>:<VolumeX size={15}/>}<span>{enabled&&playing?'MUSIC ON':'PLAY MUSIC'}</span></button></>
+  return <audio ref={element} loop preload="none" aria-hidden="true" data-testid="background-music" onPlay={() => usePreferences.setState({musicPlaying:true})} onPause={() => usePreferences.setState({musicPlaying:false})}/>
+}
+
+export function MusicToggle() {
+  const enabled=usePreferences((s)=>s.sound&&s.homeMusic), playing=usePreferences((s)=>s.musicPlaying), update=usePreferences((s)=>s.update)
+  return <button className="home-music-control" data-home-music-control aria-label={enabled&&playing?'Mute background music':'Play background music'} aria-pressed={enabled&&playing} onClick={() => { update(enabled&&playing ? {homeMusic:false} : {homeMusic:true,sound:true}); document.dispatchEvent(new Event(START_MUSIC)) }}>{enabled&&playing?<Volume2 size={15}/>:<VolumeX size={15}/>}<span>{enabled&&playing?'MUSIC ON':'PLAY MUSIC'}</span></button>
 }

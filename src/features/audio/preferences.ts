@@ -9,8 +9,8 @@ export function parsePreferences(value: unknown): Preferences {
 }
 const KEY = 'suduel.preferences.v1'
 function read(): Preferences { try { return parsePreferences(JSON.parse(localStorage.getItem(KEY) ?? '{}')) } catch { return DEFAULT_PREFERENCES } }
-export const usePreferences = create<Preferences & { update: (patch: Partial<Preferences>) => void; storageWarning: boolean }>((set, get) => ({
-  ...read(), storageWarning: false,
+export const usePreferences = create<Preferences & { update: (patch: Partial<Preferences>) => void; storageWarning: boolean; musicPlaying: boolean }>((set, get) => ({
+  ...read(), storageWarning: false, musicPlaying: false,
   update(patch) {
     const settings = parsePreferences({ ...get(), ...patch })
     let storageWarning = false

@@ -2,6 +2,8 @@ import type { SupabaseClient } from '@supabase/supabase-js'
 import { requireBackend } from '../../lib/supabase'
 
 const client = () => requireBackend() as unknown as SupabaseClient
+export type AccountSummary = { username: string; display_name: string; avatar_url: string | null }
+export type LeaderboardEntry = { user_id: string; rating: number; rank_tier: string; ranked_matches: number; profiles: AccountSummary | null }
 
 export async function loadLocker(userId: string) {
   const db = client()
@@ -20,7 +22,7 @@ export async function equipCosmetic(itemId: string) {
 }
 
 export async function loadLeaderboard() {
-  const { data, error } = await client().from('player_ratings').select('user_id,rating,rank_tier,ranked_matches,current_streak,best_streak,profiles(username,display_name,avatar_url)').order('rating', { ascending: false }).range(0, 99)
+  const { data, error } = await client().from('player_ratings').select('user_id,rating,rank_tier,ranked_matches,current_streak,best_streak,profiles!inner(username,display_name,avatar_url)').order('rating', { ascending: false }).range(0, 99).overrideTypes<LeaderboardEntry[], {merge:false}>()
   if (error) throw new Error('The leaderboard could not be loaded.')
   return data ?? []
 }

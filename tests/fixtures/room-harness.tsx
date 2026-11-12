@@ -1,3 +1,4 @@
+import '../../src/styles/chat.css'
 // Presentation fixtures only. Not an application route, authenticated match, or build entry.
 import { useEffect, useState } from 'react'
 import { createRoot } from 'react-dom/client'

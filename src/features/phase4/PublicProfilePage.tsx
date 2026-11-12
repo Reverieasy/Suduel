@@ -9,20 +9,22 @@ type Rating = { rating: number; rank_tier: string; ranked_matches: number; curre
 
 export default function PublicProfilePage() {
   const { username } = useParams()
-  const [profile, setProfile] = useState<Profile | null>(null)
-  const [rating, setRating] = useState<Rating | null>(null)
-  const [error, setError] = useState<string | null>(null)
+  const [result,setResult] = useState<{username:string;profile:Profile|null;rating:Rating|null;error:string|null}|null>(null)
+  const current=result?.username===username?result:null
+  const profile=current?.profile, rating=current?.rating, error=current?.error
   useEffect(() => {
+    let active=true
     async function load() {
       if (!username) return
       const client = requireBackend() as unknown as SupabaseClient
       const profileResult = await client.from('profiles').select('id,username,display_name,avatar_url,bio').eq('username', username).maybeSingle()
-      if (profileResult.error || !profileResult.data) { setError('Player not found.'); return }
-      setProfile(profileResult.data)
+      if(profileResult.error)throw new Error('Could not load this player.')
+      if (!profileResult.data) { if(active)setResult({username,profile:null,rating:null,error:'Player not found.'}); return }
       const ratingResult = await client.from('player_ratings').select('rating,rank_tier,ranked_matches,current_streak,best_streak').eq('user_id', profileResult.data.id).maybeSingle()
-      setRating(ratingResult.data)
+      if(active)setResult({username,profile:profileResult.data,rating:ratingResult.data,error:null})
     }
-    void load().catch(() => setError('Could not load this player.'))
+    void load().catch(() => {if(active&&username)setResult({username,profile:null,rating:null,error:'Could not load this player.'})})
+    return ()=>{active=false}
   }, [username])
   if (error) return <div className="container page-content"><p className="form-error">{error}</p><Link to="/leaderboard" className="button">BACK TO LEADERBOARD</Link></div>
   if (!profile) return <div className="container page-content"><p role="status">Loading player…</p></div>

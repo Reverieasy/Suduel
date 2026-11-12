@@ -34,17 +34,33 @@
 .attack-flight-layer { position: absolute; inset: 0; overflow: hidden; pointer-events: none; z-index: 5; }
 .arena-flight { position: absolute; inset: 0; animation: arena-projectile 240ms cubic-bezier(.3,.1,.8,.7) forwards; }
 .arena-flight .skill-projectile { animation: none; left: 12%; top: 70%; color: var(--skill-color); }
-.fog-mask { position: absolute; width: calc(100% / 3); height: calc(100% / 3); background: #15324b; display: flex; flex-direction: column; align-items: center; justify-content: center; overflow: hidden; border: 1px solid #67bfff; }
+.fog-mask { position: absolute; width: calc(100% / 3); height: calc(100% / 3); background: radial-gradient(ellipse at 20% 80%,#7a92a3,#425e75 50%,#253e55); display: flex; align-items: center; justify-content: center; overflow: hidden; border: 1px solid #9fb8cb; isolation: isolate; }
 .fog-mask.fog-board { inset: 0; width: 100%; height: 100%; }
-.fog-board strong { font-size: clamp(16px,4cqw,24px); letter-spacing: .08em; }
-.fog-mask strong,.fog-mask small { position: relative; z-index: 1; color: #d6efff; font-family: var(--font-game); text-shadow: 0 1px 5px #00182e; }
-.fog-mask small { font-size: 11px; }
-.fog-cloud { position: absolute; width: 160%; height: 90%; border-radius: 45%; background: radial-gradient(ellipse,#4c7d9e 5%,#214764 50%,transparent 72%); animation: smoke-drift 2.1s ease-in-out infinite alternate; opacity: .85; }
-.cloud-b { top: -25%; left: -35%; animation-delay: -1s; }
-.cloud-c { bottom: -25%; right: -30%; animation-delay: -.5s; }
-.frost-overlay { position: absolute; inset: 0; border: 5px solid #b3d9ffb0; box-shadow: inset 0 0 34px #82acff70; background: linear-gradient(135deg,#b7e6ff1a,transparent 40%,#c9b2ff26); }
+.fog-caption { position: relative; z-index: 2; display: flex; flex-direction: column; align-items: center; gap: 3px; padding: 9px 22px; border: 1px solid #d2e5f04d; border-radius: 30px; background: #172c4388; color: #effaff; text-shadow: 0 2px 8px #00182e; }
+.fog-caption strong { font: 400 clamp(19px,5cqw,31px) var(--font-arcade); letter-spacing: .06em; }
+.fog-caption small { font: 600 12px var(--font-game); color: #d3e8f6; }
+.fog-plume { position: absolute; width: 190%; height: 180%; left: -45%; top: -35%; background: url('/effects/fog-volume.svg') center/100% 100%; pointer-events: none; will-change: transform; }
+.plume-back { opacity: .65; filter: brightness(.75); animation: fog-roll-back 5s ease-in-out infinite alternate; }
+.plume-left { opacity: .9; top: -40%; left: -70%; animation: fog-roll-left 4.1s ease-in-out -1.2s infinite alternate; }
+.plume-right { opacity: .85; top: -20%; left: -10%; animation: fog-roll-right 4.7s ease-in-out -2.4s infinite alternate; }
+.plume-front { opacity: .85; top: 0; left: -45%; filter: brightness(1.2); animation: fog-roll-front 3.8s ease-in-out -.7s infinite alternate; }
+.frost-overlay { position: absolute; inset: 0; border: 2px solid #b3e4ff; box-shadow: inset 0 0 38px #82c9ff5e; background: radial-gradient(ellipse,transparent 38%,#9bd9ff20 68%,#b8e9ff55); }
+.frost-shards { position: absolute; inset: 0; background: url('/effects/ice-rim.svg') center/100% 100%; animation: ice-form 320ms ease-out both; }
+.frost-glint { position: absolute; inset: 0; background: linear-gradient(115deg,transparent 30%,#dcfaff40 45%,transparent 60%); background-size: 260% 100%; animation: ice-glint 1900ms ease-out; }
+.frost-flurries i { position: absolute; left: calc(mod(var(--particle),4) * 24% + 7%); top: calc(round(down,var(--particle) / 4) * 45% + 8%); width: 5px; height: 9px; background: #dbfaff; clip-path: polygon(50% 0,100% 50%,50% 100%,0 50%); opacity: .7; animation: ice-flurry 2600ms ease-in-out infinite; animation-delay: calc(var(--particle) * -210ms); }
 .frost-overlay > span,.shield-aura > span,.scramble-accent > span { position: absolute; bottom: 8px; left: 50%; transform: translateX(-50%); padding: 3px 10px; white-space: nowrap; border: 1px solid #c2a1ff; background: #182642; color: #eee4ff; font: 700 11px var(--font-game); border-radius: 3px; }
-.frost-crystals i { position: absolute; left: calc(mod(var(--particle),3) * 37% + 5%); top: calc(round(down,var(--particle) / 3) * 42%); font-size: 38px; color: #b7d7ff; opacity: .75; font-style: normal; }
+.frost-overlay > span { border-color: #c1edff; background: #17374f; color: #e1f8ff; box-shadow: 0 0 16px #89d6ff40; }
+.freeze-screen { position: fixed; inset: 0; z-index: 8; pointer-events: none; overflow: hidden; box-shadow: inset 0 0 50px #b8e9ff58,inset 0 0 120px #6aa9ef1a; animation: ice-screen-in 240ms ease-out; }
+.freeze-screen-frost { position: absolute; inset: 0; background: url('/effects/ice-rim.svg') center/100% 100%; opacity: .56; mask-image: radial-gradient(ellipse at center,transparent 42%,#000 90%); }
+.freeze-screen-glint { position: absolute; inset: 0; background: radial-gradient(ellipse at 0 0,#c6f1ff44,transparent 28%),radial-gradient(ellipse at 100% 100%,#bceaff3d,transparent 28%); }
+@keyframes fog-roll-back { from { transform: translate(-3%,-7%) scale(1.05) rotate(-8deg); } to { transform: translate(7%,5%) scale(1.16) rotate(3deg); } }
+@keyframes fog-roll-left { from { transform: translate(-12%,9%) rotate(-20deg); } to { transform: translate(18%,-8%) rotate(8deg); } }
+@keyframes fog-roll-right { from { transform: translate(11%,-6%) rotate(150deg); } to { transform: translate(-18%,9%) rotate(185deg); } }
+@keyframes fog-roll-front { from { transform: translate(-10%,9%) scale(1.05); } to { transform: translate(11%,-13%) scale(1.18); } }
+@keyframes ice-form { from { opacity: .25; transform: scale(1.09); } to { opacity: 1; transform: scale(1); } }
+@keyframes ice-glint { from { background-position: 100% 0; } to { background-position: 0 0; } }
+@keyframes ice-flurry { 50% { transform: translate(7px,15px) rotate(50deg); opacity: .3; } }
+@keyframes ice-screen-in { from { opacity: 0; } to { opacity: 1; } }
 .shield-aura { position: absolute; inset: 2px; border: 3px solid #2fcb99; border-radius: 8px; box-shadow: inset 0 0 16px #2fcb9945; }
 .shield-aura > span { border-color: #2fcb99; color: #b2ffe5; background: #103b35; }
 .scramble-accent { position: absolute; inset: 0; border: 2px solid #ffa939; box-shadow: inset 0 0 12px #ffa93930; }
@@ -101,7 +117,6 @@
 .audio-settings-trigger { width: 36px; height: 36px; flex-shrink: 0; }
 @keyframes energy-charge { 50% { box-shadow: 0 0 12px #ffd03b99; } }
 @keyframes energy-to-meter { from { transform: translateY(-65px); opacity: 0; } 25% { opacity: 1; } to { transform: translateY(15px); opacity: 0; } }
-@keyframes smoke-drift { to { transform: translate(8%,-7%) rotate(8deg); } }
 @keyframes effect-dissolve { to { opacity: 0; } }
 @keyframes light-impact { 0%,100% { transform: translate(0,0); } 25% { transform: translate(3px,-2px); } 65% { transform: translate(-2px,2px); } }
 @keyframes impact-expand { to { transform: scale(4); opacity: 0; } }
@@ -149,3 +164,5 @@
 :root[data-reduced-motion=true] *, :root[data-reduced-motion=true] *::before, :root[data-reduced-motion=true] *::after { animation: none !important; transition: none !important; scroll-behavior: auto !important; }
 :root[data-reduced-motion=true] .skill-projectile,:root[data-reduced-motion=true] .impact-particles,:root[data-reduced-motion=true] .energy-transfer,:root[data-reduced-motion=true] .scramble-accent::before,:root[data-reduced-motion=true] .scramble-accent::after { display: none; }
 :root[data-reduced-motion=true] .impact-ring { opacity: .35; width: 90%; height: 90%; inset: 5%; margin: 0; border-radius: 6px; }
+@media(prefers-reduced-motion:reduce) { .freeze-screen,.fog-plume { animation: none !important; } .frost-flurries,.frost-glint { display: none; } .fog-plume { will-change: auto; } }
+:root[data-reduced-motion=true] .frost-flurries,:root[data-reduced-motion=true] .frost-glint { display: none; }

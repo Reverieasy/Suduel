@@ -23,7 +23,11 @@ distinct from query errors, and obsolete asynchronous profile responses are igno
 
 Opponent chat opens as a fixed popover in Battle and Classic, including ranked
 Battle rooms. Current room members can read the last 50 messages and receive
-authorized Realtime updates, with a three-second polling fallback while open.
+authorized Realtime updates, with a three-second polling fallback even when closed.
+New opponent messages show a red unread dot and a five-second message preview
+only while chat is closed. Opening chat clears both; dismissing or timing out
+the preview keeps the unread dot. Historical messages, own-message echoes and
+duplicate deliveries do not notify. Arrival leaves board layout and focus intact.
 The database chooses sender identity and timestamp. Only verified players can
 send through the RPC. Clients cannot insert, edit, delete or forge messages.
 Messages are limited to 300 characters and three new messages per five seconds
@@ -53,3 +57,9 @@ Classic or Battle room, open chat in each, exchange messages, refresh one browse
 and confirm its history returns. In Battle, cast Fog/Freeze and check that the
 victim's effects expire without moving either board. Check that background music
 continues between pages and can be muted from Sound settings.
+
+The subsequent unread-notification update passed the production build, ESLint,
+application/test TypeScript checks, and 18 focused browser tests for chat and
+Battle regression. Notification cases ran at 390px and 1440px, covering initial
+history, own echoes, duplicate polls, preview expiry/dismissal, unread clearing,
+click-to-open, open-chat suppression and stable board focus/position.

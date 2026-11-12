@@ -14,6 +14,7 @@ import { MatchMenu } from '../battle/MatchMenu'
 import { SkillGuide } from '../battle/BattleHud'
 import { AudioSettings } from '../audio/AudioSettings'
 import { RoomChat } from './RoomChat'
+import { useActiveGame } from './activeGame'
 import { BattleArena } from '../battle/BattleArena'
 
 export default function RoomPage() {
@@ -39,7 +40,7 @@ export default function RoomPage() {
       // An RPC acknowledgement may arrive after a newer Realtime snapshot.
       // Its private action feedback is still valid even when its board is stale.
       consumeReply(value)
-      if (name === 'leave') navigate('/play')
+      if (name === 'leave') {useActiveGame.getState().forget(value.room.id,userId);navigate('/play')}
       else {
         accept(value, sentAt)
         // Battle mistakes already have cell, pressure and recovery feedback in the arena.
@@ -49,7 +50,7 @@ export default function RoomPage() {
       }
     } catch (failure) { setActionError(failure instanceof Error ? failure.message : 'The action could not be confirmed. Refreshing…'); void refresh(); throw failure }
     finally { inFlight.current = false; setBusy(false) }
-  }, [code, navigate, accept, refresh, consumeReply])
+  }, [code, navigate, accept, refresh, consumeReply, userId])
   async function start() {
     if (inFlight.current) return
     inFlight.current = true

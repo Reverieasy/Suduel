@@ -33,6 +33,9 @@
 }
 
 * { box-sizing: border-box; }
+.return-to-game{position:fixed;right:20px;bottom:20px;z-index:35;width:min(350px,calc(100vw - 28px));display:flex;align-items:flex-start;gap:12px;padding:18px;background:#102137;border:1px solid var(--color-primary);border-radius:10px;box-shadow:0 10px 35px #0007;color:var(--color-foreground)}
+.return-to-game>svg{color:var(--color-primary);margin-top:2px}.return-to-game strong{font:700 14px var(--font-game)}.return-to-game p{font-size:13px;line-height:1.5;margin:6px 0 14px}.return-to-game .button{gap:8px}
+@media(max-width:600px){.return-to-game{right:14px;bottom:14px;padding:14px}}
 html { scroll-behavior: smooth; }
 body { font-size: 14px; line-height: 1.6; }
 button, input, select { font: inherit; }

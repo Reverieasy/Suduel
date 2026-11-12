@@ -5,6 +5,7 @@ import { Wordmark } from '../components/Wordmark'
 import { useAuth } from '../features/auth/store'
 import { AudioSettings } from '../features/audio/AudioSettings'
 import { requireBackend } from '../lib/supabase'
+import { ReturnToGame } from '../features/multiplayer/ReturnToGame'
 
 const links = [{ to: '/', label: 'Home' }, { to: '/play', label: 'Play' }, { to: '/how-to-play', label: 'How to Play' }, { to: '/features', label: 'Features' }, { to: '/leaderboard', label: 'Leaderboard' }, { to: '/community', label: 'Community' }, { to: '/locker', label: 'Locker' }]
 
@@ -38,6 +39,7 @@ export function Shell() {
     {soundSettings && <AudioSettings onClose={() => setSoundSettings(false)} />}
     {signoutError && <p className="form-error" role="alert">{signoutError}</p>}
     <main id="main" ref={main} tabIndex={-1}><Outlet /></main>
+    <ReturnToGame/>
     <footer className="site-footer"><Link to="/" aria-label="SUDUEL home"><Wordmark /></Link><span>One grid. A whole new game.</span><Link to="/practice">Guest practice <ArrowUpRight size={14} /></Link><span className="footer-build">EARLY ACCESS / CLASSIC & BATTLE</span></footer>
   </div>
 }

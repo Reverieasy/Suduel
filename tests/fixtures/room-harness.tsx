@@ -7,6 +7,8 @@ import type { Session } from '@supabase/supabase-js'
 import RoomPage from '../../src/features/multiplayer/RoomPage'
 import { useAuth } from '../../src/features/auth/store'
 import { Shell } from '../../src/app/Shell'
+import { Landing } from '../../src/features/marketing/Landing'
+import { Features } from '../../src/features/marketing/InfoPages'
 import { Lobby } from '../../src/features/multiplayer/Lobby'
 import { BattleArena } from '../../src/features/battle/BattleArena'
 import { Race } from '../../src/features/multiplayer/Race'
@@ -63,6 +65,6 @@ export function Harness() {
     <main className={s.battle ? 'room-page battle-live' : 'container page-content'}>{view === 'lobby' ? <Lobby snapshot={s} userId={userId} now={clock} busy={false} command={command} start={noop} leave={() => {}} /> : view.endsWith('results') ? <Results snapshot={s} userId={userId} busy={false} command={command} start={noop} /> : view === 'intermission' ? <Intermission snapshot={s} userId={userId} busy={false} command={command} start={noop} /> : view === 'setup' ? <CreateRoom /> : s.battle ? <BattleArena snapshot={s} userId={userId} now={clock} busy={false} online connection="live" command={command} forfeit={() => {}} menu={() => setSettings(true)} /> : <Race snapshot={s} userId={userId} now={clock} busy={false} online command={command} forfeit={() => {}} />}</main>
     {settings && <AudioSettings onClose={() => setSettings(false)} />}</>
 }
-createRoot(document.getElementById('root')!).render(<MemoryRouter initialEntries={view === 'room-page' ? ['/room/A1B2C3D4'] : ['/']}>
-  {view === 'room-page' ? <Routes><Route element={<Shell />}><Route path="/room/:code" element={<RoomPage />} /></Route></Routes> : <Harness />}
+createRoot(document.getElementById('root')!).render(<MemoryRouter initialEntries={view === 'room-page' ? [query.get('start')==='home'?'/':'/room/A1B2C3D4'] : ['/']}>
+  {view === 'room-page' ? <Routes><Route element={<Shell />}><Route index element={<Landing/>}/><Route path="/features" element={<Features/>}/><Route path="/room/:code" element={<RoomPage />} /></Route></Routes> : <Harness />}
 </MemoryRouter>)

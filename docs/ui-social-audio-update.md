@@ -63,3 +63,26 @@ application/test TypeScript checks, and 18 focused browser tests for chat and
 Battle regression. Notification cases ran at 390px and 1440px, covering initial
 history, own echoes, duplicate polls, preview expiry/dismissal, unread clearing,
 click-to-open, open-chat suppression and stable board focus/position.
+
+Accidental navigation recovery now remembers the signed-in player's last active
+Classic room or Battle series. Away from that room, the shell shows “YOU LEFT
+YOUR GAME” with a “RETURN TO GAME” link to the same room. Only user ID, room ID
+and room code are cached locally; the server still validates access and state.
+The reminder survives a homepage reload, remains hidden on the game page and for
+other accounts, and clears for ended/closed/inaccessible games or an intentional
+forfeit/leave. Active Battle intermissions remain returnable. Connection failures
+retain the link with an honest reconnect message instead of deleting the cache.
+
+Status checks select only room/match/series metadata under the existing member
+RLS policies. They never issue snapshot/join commands while away, update
+heartbeats, pause the clock, extend the disconnect grace period, or modify ranked
+outcomes. Returning uses the existing authorized room join/recovery path. The
+fixed notice does not shift page content or take focus on arrival.
+
+This update passed application/test TypeScript checks, ESLint, the production
+build and 28 focused browser checks across Battle, Auth, chat and navigation.
+Seven navigation cases cover Classic/Battle home clicks, the same confirmed board
+after return, no absent-player heartbeats, phone/desktop layout stability,
+homepage reload, account isolation, missing/closed/finished games, transient
+network errors, intermissions and deliberate forfeits. These remain presentation
+and mocked-API checks; the separate real two-account acceptance is still pending.

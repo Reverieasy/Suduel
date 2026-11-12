@@ -2,6 +2,8 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import { requireBackend } from '../../lib/supabase'
 import { roomCommand } from './api'
 import type { RoomSnapshot } from './types'
+import { useActiveGame } from './activeGame'
+import { useAuth } from '../auth/store'
 
 export function useRoom(code: string) {
   const [snapshot, setSnapshot] = useState<RoomSnapshot | null>(null)
@@ -20,6 +22,8 @@ export function useRoom(code: string) {
     const serverTime = Date.parse(value.server_now)
     if (latest.current.code === value.room.code && (value.cursor < latest.current.cursor || serverTime < latest.current.time)) return
     latest.current = { code: value.room.code, cursor: value.cursor, time: serverTime }
+    const userId=useAuth.getState().session?.user.id
+    if(userId)useActiveGame.getState().remember(value,userId)
     setSnapshot(value)
     setOffset(Date.parse(value.server_now) - (sentAt + Date.now()) / 2)
     setError(null)

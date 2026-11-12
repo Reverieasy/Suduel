@@ -66,6 +66,8 @@ HTTPS app origin for cross-device invitations, rather than localhost.
   background music across routes and matches; live connected-player counts.
 - Private opponent chat, server-verified senders, retry deduplication and rate
   limits; leaderboard account names link to their correct public profiles.
+- A persistent Return to game reminder after accidental navigation away from
+  an active Classic match or Battle series, without extending reconnect grace.
 
 See the [V3 implementation and verification record](docs/v3-delivery.md) and
 [two-player acceptance procedure](docs/v3-testing.md). See also the

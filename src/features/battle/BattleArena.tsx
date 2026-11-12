@@ -13,8 +13,9 @@ import { MistakePressure } from './MistakePressure'
 import { BattleFeed } from './BattleFeed'
 import { AttackFlights, BattleAnnouncements, PressureTransfers, ScreenEffects } from './ScreenEffects'
 import { useFeedback } from './feedback'
-import { unitCells, validKeypad, NORMAL_KEYPAD, displayDigit, canonicalDigit } from './rules'
+import { fogCells, validKeypad, NORMAL_KEYPAD, displayDigit, canonicalDigit } from './rules'
 import { audioManager } from '../audio/manager'
+import { RowCelebration } from './RowCelebration'
 
 interface Props { snapshot: RoomSnapshot; userId: string; now: number; busy: boolean; online: boolean; connection: string; command: (name: string, payload?: Record<string,string|number|boolean>) => Promise<void>; forfeit: () => void; menu: () => void; resync?: () => void }
 export function BattleArena({ snapshot: s, userId, now, busy, online, connection, command, forfeit, menu, resync }: Props) {
@@ -28,8 +29,9 @@ export function BattleArena({ snapshot: s, userId, now, busy, online, connection
   const effects = useMemo(() => battle.effects.filter((e) => !e.consumed_at && Date.parse(e.expires_at)>now),[battle.effects,now])
   const localEffects = useMemo(() => effects.filter((e) => e.target_id===userId),[effects,userId])
   const remoteEffects = useMemo(() => effects.filter((e) => e.target_id===rival.user_id),[effects,rival.user_id])
-  const fogRegion = localEffects.find((e) => e.skill==='fog')?.region
-  const hiddenCells = useMemo(() => new Set(fogRegion!=null ? unitCells('box',fogRegion) : []),[fogRegion])
+  const fog = localEffects.find((e) => e.skill==='fog')
+  const fogRegion = fog ? fog.region ?? null : undefined
+  const hiddenCells = useMemo(() => new Set(fogCells(fogRegion)),[fogRegion])
   const scrambled = localEffects.find((e) => e.skill==='scramble')?.keypad
   const localMapping = useMemo(() => validKeypad(scrambled), [scrambled])
   const remoteScramble = remoteEffects.find((e) => e.skill==='scramble')?.keypad
@@ -62,13 +64,13 @@ export function BattleArena({ snapshot: s, userId, now, busy, online, connection
     <div className="battle-view-switch" role="group" aria-label="Choose board view"><button aria-pressed={!rivalView} onClick={() => setRivalView(false)}>YOUR GRID · {ownPercent}%</button><button aria-pressed={rivalView} onClick={() => setRivalView(true)}>RIVAL GRID · {rivalPercent}%</button></div>
     <div className="battle-board-arena"><AttackFlights matchId={match.id}/><PressureTransfers matchId={match.id} userId={userId}/>
       <section className="battle-board-panel local-battle-panel" aria-label="Your battle board"><div className="battle-player-heading"><Avatar name={me.username} url={me.avatar_url}/><div><h2>YOU <small>@{me.username}</small></h2><progress max={100} value={ownPercent} aria-label="Your progress"/></div><strong className="blue">{ownPercent}%</strong></div>
-        <div className="battle-grid-container"><div className="battle-grid-stack"><SudokuGrid clues={shownClues} values={shownEntries} notes={shownNotes} selected={selected} pencil={pencil} invalid={invalid} hiddenCells={hiddenCells} disabled={disabled} describedBy="battle-input-status" onSelect={select} onPlace={place} onToggleNotes={toggle}/><ScreenEffects effects={localEffects} now={now} matchId={match.id} playerId={userId}/>{countdown>0&&<div className="race-countdown" role="status"><strong>{countdown}</strong><span>GET READY</span></div>}</div></div>
+        <div className="battle-grid-container"><div className="battle-grid-stack"><SudokuGrid clues={shownClues} values={shownEntries} notes={shownNotes} selected={selected} pencil={pencil} invalid={invalid} hiddenCells={hiddenCells} disabled={disabled} describedBy="battle-input-status" onSelect={select} onPlace={place} onToggleNotes={toggle}/><ScreenEffects effects={localEffects} now={now} matchId={match.id} playerId={userId}/><RowCelebration matchId={match.id} playerId={userId}/>{countdown>0&&<div className="race-countdown" role="status"><strong>{countdown}</strong><span>GET READY</span></div>}</div></div>
         <div className="battle-local-controls"><NumberPad digits={NORMAL_KEYPAD} disabled={disabled} place={place}/><div className="battle-utilities"><button disabled={disabled} aria-pressed={pencil} onClick={toggle}><Pencil size={14}/> NOTES {pencil?'ON':'OFF'}</button><button disabled={disabled} onClick={() => place(0)}><Eraser size={14}/> ERASE</button><span id="battle-input-status" role="status">{recovering?'RECOVERING · 0.5s':frozen?'FROZEN':scrambled?'BOARD DIGITS SHUFFLED':Date.parse(state.freeze_immunity_until ?? '')>now?'FREEZE IMMUNITY':'1–9 · N NOTES · DEL ERASE'}</span></div></div>
         <MistakePressure snapshot={s} playerId={userId} label="Your"/>
       </section>
       <section className="battle-center" aria-label="Match timer and round score"><MatchTimer snapshot={s} now={now} userId={userId}/></section>
       <section className="battle-board-panel rival-battle-panel" aria-label="Opponent battle board"><div className="battle-player-heading"><Avatar name={rival.username} url={rival.avatar_url} opponent/><div><h2>RIVAL <small>@{rival.username}</small></h2><progress max={100} value={rivalPercent} aria-label="Opponent progress"/></div><strong className="red">{rivalPercent}%</strong></div>
-        <div className="battle-grid-container"><div className="battle-grid-stack"><OpponentBoard board={shownRival} changedCell={typeof latestMove?.payload.cell==='number'?latestMove.payload.cell:undefined}/><ScreenEffects effects={remoteEffects} now={now} matchId={match.id} playerId={rival.user_id} audible={false}/></div></div>
+        <div className="battle-grid-container"><div className="battle-grid-stack"><OpponentBoard board={shownRival} changedCell={typeof latestMove?.payload.cell==='number'?latestMove.payload.cell:undefined}/><ScreenEffects effects={remoteEffects} now={now} matchId={match.id} playerId={rival.user_id} audible={false}/><RowCelebration matchId={match.id} playerId={rival.user_id} rival/></div></div>
         <div className="rival-status"><strong aria-label="Rival energy">RIVAL ENERGY <b>{rivalState.energy} / {battle.series.rules.maxEnergy}</b></strong><span>{rivalOffline?'CONNECTION INTERRUPTED · GRACE PERIOD':remoteEffects.length?remoteEffects.map((e) => `${e.skill.toUpperCase()} ${Math.max(0,(Date.parse(e.expires_at)-now)/1000).toFixed(1)}s`).join(' · '):'LIVE CONFIRMED ENTRIES · READ ONLY'}</span><small>{battle.series.rules.puzzleAssignment?.startsWith('independent-')?'INDEPENDENT PUZZLES · SAME DIFFICULTY':'LEGACY SHARED PUZZLE'}</small></div>
         <MistakePressure snapshot={s} playerId={rival.user_id} label="Rival"/>
       </section>

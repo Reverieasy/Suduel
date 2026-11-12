@@ -14,15 +14,23 @@ for (const width of [390,768,1024,1440]) test(`Battle UI fixtures fit ${width}px
   expect(errors).toEqual([])
 })
 
-test('Fog conceals exactly the assigned region, expires, and preserves keyboard focus', async ({ page }) => {
+test('Fog conceals the entire board, expires, and preserves keyboard focus', async ({ page }) => {
   await page.goto('/tests/fixtures/room-harness.html?view=fog&ttl=1800')
   const concealed = page.getByRole('button', { name: /concealed by Fog/ })
-  await expect(concealed).toHaveCount(9)
-  expect(await concealed.allTextContents()).toEqual(Array(9).fill(''))
+  await expect(concealed).toHaveCount(81)
+  expect(await concealed.allTextContents()).toEqual(Array(81).fill(''))
+  const mask=await page.locator('.fog-board').boundingBox(), grid=await page.getByRole('grid',{name:'Sudoku puzzle',exact:true}).boundingBox()
+  expect(mask!.width).toBeCloseTo(grid!.width,0); expect(mask!.height).toBeCloseTo(grid!.height,0)
   await page.getByRole('grid', { name: 'Sudoku puzzle', exact: true }).getByRole('button').nth(0).focus()
   await expect(page.locator('[data-effect=fog]')).toHaveCount(0)
   await expect(concealed).toHaveCount(0)
   await expect(page.getByRole('grid', { name: 'Sudoku puzzle', exact: true }).getByRole('button').nth(0)).toBeFocused()
+})
+
+test('Saved legacy Fog still conceals its original box', async ({page}) => {
+  await page.goto('/tests/fixtures/room-harness.html?view=fog&legacyFog=true')
+  await expect(page.getByRole('button',{name:/concealed by Fog/})).toHaveCount(9)
+  await expect(page.locator('.fog-board')).toHaveCount(0)
 })
 
 test('Freeze disables entry only while valid; the same grid resumes without reset', async ({ page }) => {

@@ -172,7 +172,7 @@ test.describe('LIVE Supabase: two pre-verified real accounts', () => {
       expect(blocked.battle!.effects.some((e) => e.skill === 'fog')).toBe(false)
       const frozen = await cast(a,'freeze')
       const freeze = frozen.battle!.effects.find((e) => e.skill === 'freeze')!
-      expect(Date.parse(freeze.expires_at)-Date.parse(freeze.starts_at)).toBe(2500)
+      expect(Date.parse(freeze.expires_at)-Date.parse(freeze.starts_at)).toBe(3500)
       await expect(b.getByRole('grid', { name: 'Sudoku puzzle', exact: true })).toHaveAttribute('aria-disabled','true')
       await expect(b.getByRole('grid', { name: 'Sudoku puzzle', exact: true })).toHaveAttribute('aria-disabled','false')
       await expect(b.getByText('FREEZE IMMUNITY', { exact: true })).toBeVisible()
@@ -184,8 +184,8 @@ test.describe('LIVE Supabase: two pre-verified real accounts', () => {
       await expect(b.getByRole('grid',{name:'Sudoku puzzle',exact:true}).getByRole('button').nth(scrambledCell)).toHaveText(scrambledValue)
       await expect(rivalA.getByRole('gridcell').nth(scrambledCell)).toHaveText(scrambledValue)
       const fogged = await cast(b,'fog'), fog = fogged.battle!.effects.find((e) => e.skill === 'fog')!
-      expect(fog.region).toBeGreaterThanOrEqual(0); expect(fog.region).toBeLessThanOrEqual(8)
-      await expect(a.getByRole('button', { name: /concealed by Fog/ })).toHaveCount(9)
+      expect(fog.region).toBeNull()
+      await expect(a.getByRole('button', { name: /concealed by Fog/ })).toHaveCount(81)
       await a.reload(); await expect(a.getByRole('grid', { name: 'Sudoku puzzle', exact: true })).toBeVisible()
       await expect(a.locator('.battle-connection')).toHaveText('LIVE')
       await expect(a.getByLabel('Your energy', { exact: true })).toHaveText('1 / 5')

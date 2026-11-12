@@ -13,7 +13,7 @@ export function HowToPlay() {
     ].map(([number, title, description, color]) => <article className={`instruction-card accent-${color}`} key={number}><span className="step-number">{number}</span><h2>{title}</h2><p>{description}</p></article>)}</div>
     <section className="panel battle-guide"><div className="section-heading"><h2>YOUR BATTLE TOOLKIT</h2><span className="badge">PRIVATE 1V1 BATTLES</span></div><p>Complete a row or column for +1 energy, or a 3×3 box for +2. Store up to 5. Each unit pays once. Attacks affect the interface; the solution stays intact. Shared cast cooldown: 1 second. Freeze grants 3 seconds of immunity after it ends. First to two round wins takes the series; draws replay with a fresh grid. Forfeiting concedes the whole series.</p>
       <div className="skills-grid">{[
-        { name: 'FOG', Icon: CloudFog, detail: `${skills.fog.cost} energy · conceals a box for ${skills.fog.durationMs/1000} seconds`, color: 'blue' },
+        { name: 'FOG', Icon: CloudFog, detail: `${skills.fog.cost} energy · conceals the entire board for ${skills.fog.durationMs/1000} seconds`, color: 'blue' },
         { name: 'FREEZE', Icon: Snowflake, detail: `${skills.freeze.cost} energy · pauses input for ${skills.freeze.durationMs/1000} seconds`, color: 'purple' },
         { name: 'SCRAMBLE', Icon: Shuffle, detail: `${skills.scramble.cost} energy · shuffles board digits for ${skills.scramble.durationMs/1000} seconds`, color: 'orange' },
         { name: 'SHIELD', Icon: Shield, detail: `${skills.shield.cost} energy · blocks one attack within ${skills.shield.durationMs/1000} seconds`, color: 'green' },

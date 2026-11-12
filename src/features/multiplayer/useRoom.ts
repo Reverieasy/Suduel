@@ -49,6 +49,14 @@ export function useRoom(code: string) {
     return () => { disposed = true; mounted.current = false; window.removeEventListener('online', online); window.removeEventListener('offline', offline); document.removeEventListener('visibilitychange', visibility) }
   }, [code, accept, refresh])
   const battleActive = snapshot?.match?.mode === 'battle' && snapshot.match.status === 'active'
+  const fogDeadline = snapshot?.battle?.effects.filter((e) => e.skill==='fog').reduce((soonest,e) => Math.min(soonest,Date.parse(e.expires_at)),Infinity) ?? Infinity
+  const hasRedactedBoard = snapshot?.battle?.boards?.some((board) => board.redacted_cells.length>0) ?? false
+  useEffect(() => {
+    if(!battleActive || !hasRedactedBoard || !Number.isFinite(fogDeadline))return
+    // Redacted rival values must come from the server again when Fog expires.
+    const timer=window.setTimeout(() => { if(navigator.onLine)void refresh() },Math.max(0,fogDeadline-Date.now()-offset)+80)
+    return () => window.clearTimeout(timer)
+  },[battleActive,hasRedactedBoard,fogDeadline,offset,refresh])
   useEffect(() => {
     // Short skills need faster recovery snapshots while Realtime reconnects.
     const period = battleActive && connection === 'polling' ? 500 : connection === 'offline' ? 2000 : 5000

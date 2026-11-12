@@ -126,11 +126,16 @@ begin
   perform set_config('request.jwt.claim.sub',b::text,true);
   select version into before_version from public.battle_players where match_id=mid and user_id=b;
   s:=public.suduel_command('cast',jsonb_build_object('code',code,'match_id',mid,'skill','fog','battle_version',before_version),gen_random_uuid());
-  assert exists(select 1 from jsonb_array_elements(s->'battle'->'boards') x where x->>'user_id'=a::text and jsonb_array_length(x->'redacted_cells')=9 and (select count(*) from jsonb_array_elements(x->'entries') e where e='null'::jsonb)=9),'Remote Fog entries not redacted';
+  assert exists(select 1 from jsonb_array_elements(s->'battle'->'boards') x where x->>'user_id'=a::text and jsonb_array_length(x->'redacted_cells')=81 and (select count(*) from jsonb_array_elements(x->'entries') e where e='null'::jsonb)=81),'Remote Fog entries not redacted';
   perform set_config('request.jwt.claim.sub',a::text,true);
   t:=public.suduel_command('snapshot',jsonb_build_object('code',code));
   assert t->'board'->'entries' is not null and not exists(select 1 from jsonb_array_elements(t->'board'->'entries') e where e='null'::jsonb),'Own confirmed board corrupted by Fog';
   assert not exists(select 1 from jsonb_array_elements(s->'events') e where e->'payload' ? 'digit' or e->'payload' ? 'solution' or e->'payload' ? 'entries'),'Hidden values leaked into shared event feed';
+  perform set_config('request.jwt.claim.sub',b::text,true);
+  update public.skill_effects set starts_at=clock_timestamp()-interval '6 seconds',expires_at=clock_timestamp()-interval '1 second' where match_id=mid and skill='fog';
+  s:=public.suduel_command('snapshot',jsonb_build_object('code',code));
+  assert exists(select 1 from jsonb_array_elements(s->'battle'->'boards') x where x->>'user_id'=a::text and jsonb_array_length(x->'redacted_cells')=0 and x->'entries'=(select to_jsonb(entries) from private.player_boards where match_id=mid and user_id=a)),'Fog expiry failed to restore confirmed remote entries';
+  perform set_config('request.jwt.claim.sub',a::text,true);
   execute 'set local role authenticated';
   failed:=false; begin update public.battle_players set mistake_pressure=0,pressure_rewards=0,input_recovery_until=null where match_id=mid; exception when insufficient_privilege then failed:=true; end;
   assert failed,'Browser could reset pressure/recovery';
@@ -175,6 +180,17 @@ begin
     assert (select energy=5-v_cost from public.battle_players where match_id=next_mid and user_id=a),'Incorrect skill price charged';
     perform public.suduel_command('cast',jsonb_build_object('code',code,'match_id',next_mid,'skill',v_skill,'battle_version',before_version),action);
     assert (select energy=5-v_cost from public.battle_players where match_id=next_mid and user_id=a),'Skill retry charged twice';
+    if v_skill='fog' then
+      assert exists(select 1 from public.skill_effects where match_id=next_mid and skill='fog' and region is null),'Full-board Fog was assigned a box';
+      assert exists(select 1 from jsonb_array_elements(s->'battle'->'boards') x where x->>'user_id'=b::text and jsonb_array_length(x->'redacted_cells')=81),'Caster could see Fogged rival cells';
+    end if;
+    if v_skill='freeze' then
+      assert exists(select 1 from public.skill_effects e join public.battle_players bp on bp.match_id=e.match_id and bp.user_id=e.target_id where e.match_id=next_mid and e.skill='freeze' and e.expires_at-e.starts_at=interval '3.5 seconds' and bp.freeze_immunity_until-e.expires_at=interval '3 seconds'),'Freeze timing or immunity incorrect';
+      perform set_config('request.jwt.claim.sub',b::text,true);
+      failed:=false; begin perform public.suduel_command('move',jsonb_build_object('code',code,'match_id',next_mid,'version',0,'cell',0,'digit',sol_b[1]),gen_random_uuid()); exception when others then failed:=position('Frozen' in sqlerrm)>0; end;
+      assert failed,'Freeze did not block server-side input';
+      perform set_config('request.jwt.claim.sub',a::text,true);
+    end if;
     if v_skill='scramble' then
       assert exists(select 1 from jsonb_array_elements(s->'battle'->'effects') e where e->>'skill'='scramble' and jsonb_array_length(e->'keypad')=9),'Digit shuffle mapping missing from snapshot';
       assert (select b.entries=bp.clues from private.player_boards b join private.battle_puzzles bp using(match_id,user_id) where b.match_id=next_mid and b.user_id<>a),'Scramble mutated confirmed rival cells';
@@ -182,7 +198,7 @@ begin
     assert exists(select 1 from public.skill_effects e join public.game_matches gm on gm.id=e.match_id where e.match_id=next_mid and e.skill=v_skill and extract(epoch from e.expires_at-e.starts_at)*1000=(gm.battle_rules->'skills'->v_skill->>'durationMs')::integer),'Configured effect duration not honored';
   end loop;
   assert s->'battle'->'series'->'rules'->'skills'->'fog'->>'durationMs'='5000'
-    and s->'battle'->'series'->'rules'->'skills'->'freeze'->>'durationMs'='2500'
+    and s->'battle'->'series'->'rules'->'skills'->'freeze'->>'durationMs'='3500'
     and s->'battle'->'series'->'rules'->'skills'->'scramble'->>'durationMs'='8000'
     and s->'battle'->'series'->'rules'->'skills'->'shield'->>'durationMs'='20000','Longer timing rules not assigned to new series';
   -- Classic keeps its existing mistake count and never grants pressure energy.

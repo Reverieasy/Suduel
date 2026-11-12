@@ -37,7 +37,7 @@ const initial: RoomSnapshot = {
   board: { entries: [...clues], version: 0 }, battle: null,
 }
 function effect(skill: Skill, duration: number) {
-  return { id: crypto.randomUUID(), match_id: matchId, source_id: rivalId, target_id: userId, skill, starts_at: new Date(now).toISOString(), expires_at: new Date(now+duration).toISOString(), consumed_at: null, region: skill === 'fog' ? 4 : null, keypad: skill === 'scramble' ? [9,8,7,6,5,4,3,2,1] : null }
+  return { id: crypto.randomUUID(), match_id: matchId, source_id: rivalId, target_id: userId, skill, starts_at: new Date(now).toISOString(), expires_at: new Date(now+duration).toISOString(), consumed_at: null, region: skill === 'fog' && query.get('legacyFog') === 'true' ? 4 : null, keypad: skill === 'scramble' ? [9,8,7,6,5,4,3,2,1] : null }
 }
 if (isBattle) initial.battle = {
   series: { id: seriesId, room_id: roomId, status: 'active', winner_id: null, outcome: null, created_at: new Date(now).toISOString(), completed_at: null, rules: DEFAULT_BATTLE_RULES },

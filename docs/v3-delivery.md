@@ -41,7 +41,7 @@ events trigger fresh snapshots and reconnects restore both boards. The existing
 
 ## Pressure and balancing
 
-New series use saved rule version 5. Mistake Pressure defaults:
+New series use saved rule version 6. Mistake Pressure defaults:
 
 | Rule | Value |
 | --- | --- |
@@ -59,15 +59,23 @@ rejected cell revision do not count again, even after unrelated board changes.
 Accepting/erasing that cell advances its revision. Genuine mistakes, pressure,
 bonus opportunities, actual stored energy and recovery deadlines persist server-side.
 All pressure and award counters reset on a new round. Classic awards no mistake
-energy. No individual rating deductions or ranked-rating system were introduced.
+energy. Individual mistakes do not deduct ranked rating; completed Ranked Battle
+outcomes determine rating changes.
 
 Changing balancing requires a new `private.battle_config` version. Keep
 `DEFAULT_BATTLE_RULES` in sync for guide/fixture defaults; clients render saved
 series rules. Existing series retain their saved durations and rule values.
-New-series attack durations are Fog **5 s**, Freeze **2.5 s**, Scramble **8 s** and
+New-series attack durations are Fog **5 s**, Freeze **3.5 s**, Scramble **8 s** and
 Shield **20 s**. Scramble costs **4 energy**; Shield costs **5 energy**. Shared
 cooldown remains 1 s; post-Freeze immunity remains 3 s. Saved older series retain
 their original prices; start a new series for the updated balance.
+
+Fog now conceals all 81 cells, including notes and accessible digit labels, for
+both the owner and the rival viewing that board. A null effect region denotes
+full-board Fog; saved older box effects remain supported. The server redacts all
+remote entries while Fog is active, retains the confirmed private state and
+restores the actual entries afterward. A client refresh at the Fog deadline
+restores redacted rival values without waiting for periodic polling.
 
 Scramble now remaps the digits displayed on the actual board, including clues,
 confirmed entries and local notes. Every digit changes symbol using the same
@@ -92,6 +100,13 @@ pressure-break sound and red-to-yellow transfer particles. Capped/limited awards
 describe the actual outcome. Accepted events populate the internally scrolling
 live feed. Attacks and persistent effects render on the appropriate actual board
 for both players. System/app reduced-motion settings disable travel and pulses.
+Server-confirmed row completions also show a short, non-interactive arcade popup:
+“LOGIC SURGE!”, “PERFECT LINE!”, “GRID GENIUS!”, “NUMBER NOVA!” or “SHARP SOLVE!”.
+Multi-unit completions use “LOGIC COMBO!” or “GRID OVERDRIVE!”. The popup sits
+over the relevant player's board without changing layout, uses actual stored
+energy in its detail, and does not replay historical or duplicate events.
+Reduced motion keeps static text and disables the popup travel and sparks.
+
 The local pack contains 30 effects plus one original 12-second homepage ambience
 loop (approximately 1.06 MB total). Music starts after user interaction, has a
 persisted toggle, follows master mute/volume, pauses in hidden tabs and stops when
@@ -104,9 +119,9 @@ All wordmarks now render “EL” red, including the header and footer.
 | Check | Result |
 | --- | --- |
 | TypeScript, ESLint, production bundle | Pass |
-| Unit/domain/audio | 52 passed; includes 18 generated pairs across all three tiers, uniqueness, valid solutions, estimator reproducibility and rejection of unmatched/duplicate pairs |
+| Unit/domain/audio | 54 passed; includes 18 generated pairs across all three tiers, uniqueness, valid solutions, estimator reproducibility and rejection of unmatched/duplicate pairs |
 | Pair-generation stress check | 300 additional pairs across all tiers, zero failures |
-| Browser regression | 38 passed; 2 live-account tests explicitly skipped without credentials |
+| Browser regression | 42 passed; 2 live-account tests explicitly skipped without credentials |
 | V3 browser behavior | Rival confirmed entries/erase/reload/Fog redaction, read-only grid, pressure recovery/break/feed/transfer/reset presentation, reduced motion and compact dock |
 | Layout screenshots inspected | 1366×768 desktop and 390×844 phone; automated bounds also checked at 1920×1080, 1600×900, 1440×900 and 768×1024 |
 | Database contracts | Phase 2, saved-v1 Phase 3 and V3 suites all pass in rolled-back transactions |
@@ -122,6 +137,7 @@ Applied to existing project `curftgyefvgakxnmrqye`:
 - `20261110135800_longer_battle_effects.sql`
 - `20261110140820_solver_matched_battle_puzzles.sql`
 - `20261110220535_board_scramble_energy_costs.sql`
+- `20261112081339_full_board_fog_freeze_balance.sql`
 - Updated `start-race` Edge Function, version 3, active.
 
 The frontend release target is https://suduel.vercel.app. Follow

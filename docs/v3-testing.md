@@ -75,9 +75,13 @@ finished deploying the V3 commit before using that origin for acceptance.
    is granted this round. A bonus at energy 5 is discarded and consumes its
    opportunity. Fast valid submissions beyond 8 per second are rejected server-side.
 6. Charge energy through correct unit completions and compare attacks on both
-   actual grids. Fog lasts 5 s, Freeze 2.5 s plus 3 s immunity, Scramble 8 s and
+   actual grids. Fog conceals all 81 cells for 5 s, Freeze lasts 3.5 s plus 3 s immunity, Scramble 8 s and
    Shield up to 20 s. Refresh during each effect; old impacts must not replay.
-   During Fog, the caster's rival grid must conceal the same region too. Scramble
+   During Fog, the caster's rival grid must conceal the entire board too, then
+   restore the actual confirmed values promptly at expiry. Complete a row and
+   verify the original praise popup appears without shifting or blocking the
+   board. Duplicate snapshots/reconnect must not replay it; reduced motion must
+   preserve the text without travel or sparks. Scramble
    costs 4 energy and Shield costs 5 in a new series. Scramble changes digits on
    the board rather than keypad order; both clients must display the same remapped
    clues/entries. Entering displayed digits, taking notes, erasing and expiry must

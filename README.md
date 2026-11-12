@@ -60,6 +60,8 @@ HTTPS app origin for cross-device invitations, rather than localhost.
 - Board-digit Scramble (4 energy), Shield (5 energy), and a homepage ambience
   loop with mute controls and subtle background-only motion. Reduced motion is
   respected; header/footer wordmarks match the red “EL” of the homepage title.
+- Full-board Fog, 3.5-second Freeze, and original arcade row-completion popups
+  that celebrate confirmed progress without shifting the arena.
 
 See the [V3 implementation and verification record](docs/v3-delivery.md) and
 [two-player acceptance procedure](docs/v3-testing.md). Rankings, payments and
@@ -77,7 +79,7 @@ community remain future work.
 | --- | --- |
 | `npm run typecheck` | Strict TypeScript |
 | `npm run lint` | ESLint, no warnings |
-| `npm test` | 52 domain/unit/audio tests |
+| `npm test` | 54 domain/unit/audio tests |
 | `npm run test:e2e` | Public/auth/practice regression and responsive UI fixture tests |
 | `npm run test:multiplayer` | Optional actual two-account Classic and Battle tests; skips without runtime credentials |
 | `npm run check:backend` | Live public Auth settings and unauthorized/private access checks |
@@ -90,7 +92,7 @@ supported channel. Layout fixtures are test-only and are not live multiplayer
 verification or production application routes.
 
 The Phase 2, Phase 3 and V3 database contracts all pass in rolled-back transactions
-with database-only identities. The browser run passes 38 tests and explicitly
+with database-only identities. The browser run passes 42 tests and explicitly
 skips the two real-account tests when runtime credentials are absent. These checks
 do not simulate real Auth email delivery or two real
 authenticated Realtime clients.

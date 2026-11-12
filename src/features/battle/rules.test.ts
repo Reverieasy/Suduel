@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { unitCells, validKeypad, NORMAL_KEYPAD, timerPhase, displayDigit, canonicalDigit } from './rules'
+import { unitCells, validKeypad, NORMAL_KEYPAD, timerPhase, displayDigit, canonicalDigit, fogCells, rowCelebration } from './rules'
 import { CueGate, EventCursor, type GameEvent } from './events'
 import { parsePreferences, DEFAULT_PREFERENCES } from '../audio/preferences'
 
@@ -12,6 +12,18 @@ describe('battle presentation boundaries', () => {
     }
     expect(unitCells('box', 4)).toEqual([30,31,32,39,40,41,48,49,50])
     expect(unitCells('row', 9)).toEqual([])
+  })
+  it('conceals all 81 Fog cells while retaining saved legacy box effects', () => {
+    expect(fogCells(undefined)).toEqual([])
+    expect(fogCells(null)).toEqual(Array.from({length:81},(_,i)=>i))
+    expect(fogCells(4)).toEqual(unitCells('box',4))
+  })
+  it('uses original row praise and distinguishes multi-unit completions', () => {
+    expect(rowCelebration([{kind:'row',index:0,reward:1}])).toBe('LOGIC SURGE!')
+    expect(rowCelebration([{kind:'row',index:1,reward:1}])).toBe('PERFECT LINE!')
+    expect(rowCelebration([{kind:'box',index:0,reward:2}])).toBeNull()
+    expect(rowCelebration([{kind:'row',index:0,reward:1},{kind:'column',index:0,reward:1}])).toBe('LOGIC COMBO!')
+    expect(rowCelebration([{kind:'row',index:0,reward:1},{kind:'column',index:0,reward:1},{kind:'box',index:0,reward:2}])).toBe('GRID OVERDRIVE!')
   })
   it('preserves valid keypad permutations and rejects lost, duplicated or foreign digits', () => {
     const shuffled = [9,4,6,3,1,5,8,2,7]

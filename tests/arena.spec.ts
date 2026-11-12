@@ -72,6 +72,68 @@ test('Actual remote entries, erases and redacted Fog recover without granting ed
   expect(await own.textContent()).toBe(original)
 })
 
+test('Full-board Fog covers both perspectives and restores all entries after reconnect and expiry', async ({page}) => {
+  const server=await roomFixture(page)
+  const own=page.getByRole('grid',{name:'Sudoku puzzle',exact:true}), rival=page.getByRole('grid',{name:'Opponent Sudoku puzzle'})
+  const original=await own.textContent()
+  server.mutate((s)=> {
+    s.battle!.effects=s.players.map((player,i)=>({id:crypto.randomUUID(),match_id:s.match!.id,source_id:s.players[1-i].user_id,target_id:player.user_id,skill:'fog',starts_at:new Date().toISOString(),expires_at:new Date(Date.now()+5000).toISOString(),consumed_at:null,region:null,keypad:null}))
+    const b=s.battle!.boards![1];b.entries=Array(81).fill(null);b.redacted_cells=Array.from({length:81},(_,i)=>i)
+  })
+  await server.resync()
+  await expect(own.getByRole('button',{name:/concealed by Fog/})).toHaveCount(81)
+  await expect(rival.getByRole('gridcell',{name:/concealed by Fog/})).toHaveCount(81)
+  expect((await own.textContent())!.trim()).toBe('');expect((await rival.textContent())!.trim()).toBe('')
+  await expect(page.locator('.fog-board')).toHaveCount(2)
+  await page.reload();await expect(own.getByRole('button',{name:/concealed by Fog/})).toHaveCount(81)
+  server.mutate((s)=>{s.battle!.effects=[];const b=s.battle!.boards![1];b.entries=[...b.clues];b.redacted_cells=[]})
+  await server.resync();await expect(page.locator('.fog-board')).toHaveCount(0)
+  expect(await own.textContent()).toBe(original)
+  await expect(rival.getByRole('gridcell',{name:/concealed by Fog/})).toHaveCount(0)
+})
+
+test('Server-confirmed rows show original praise without moving the board or replaying old events', async ({page},testInfo) => {
+  const server=await roomFixture(page), grid=page.getByRole('grid',{name:'Sudoku puzzle',exact:true})
+  const bounds=await grid.boundingBox()
+  const praise=page.getByRole('status',{name:'Your row celebration',exact:true})
+  server.mutate((s)=>{s.events!.push({sequence:s.cursor+1,match_id:s.match!.id,kind:'energy',created_at:new Date().toISOString(),payload:{actor_id:s.players[0].user_id,units:[{kind:'row',index:0,reward:1}],generated:1,stored:1,combo:1}})})
+  await server.resync();await expect(praise).toContainText('LOGIC SURGE!')
+  await expect(praise).toContainText('+1 ENERGY')
+  expect(await grid.boundingBox()).toEqual(bounds)
+  await page.screenshot({path:testInfo.outputPath('row-praise.png')})
+  await expect(praise).toHaveCount(0);await server.resync();await expect(praise).toHaveCount(0)
+  await page.emulateMedia({reducedMotion:'reduce'})
+  server.mutate((s)=>{s.events!.push({sequence:s.cursor+1,match_id:s.match!.id,kind:'energy',created_at:new Date().toISOString(),payload:{actor_id:s.players[1].user_id,units:[{kind:'row',index:1,reward:1}],generated:1,stored:1,combo:1}})})
+  await server.resync()
+  const rival=page.getByRole('status',{name:'Rival row celebration',exact:true})
+  await expect(rival).toContainText('PERFECT LINE!')
+  await expect(rival.locator('.row-praise-card')).toHaveCSS('animation-name','none')
+  await expect(rival.locator('.row-praise-card')).toHaveCSS('transform','none')
+  await expect(rival.locator('i').first()).toBeHidden()
+  await page.reload();await expect(page.locator('.row-celebration')).toHaveCount(0)
+})
+
+test('Fog expiry refreshes redacted rival numbers even without normal polling or Realtime', async ({page}) => {
+  await page.routeWebSocket(/realtime\/v1\/websocket/,()=>{})
+  await page.addInitScript(() => {
+    const interval=window.setInterval.bind(window)
+    window.setInterval=((handler: TimerHandler,period?: number,...args: unknown[]) => interval(period===500||period===5000 ? ()=>{} : handler,period,...args)) as typeof window.setInterval
+  })
+  const server=await roomFixture(page), rival=page.getByRole('grid',{name:'Opponent Sudoku puzzle'})
+  server.mutate((s)=> {
+    s.battle!.effects=[{id:crypto.randomUUID(),match_id:s.match!.id,source_id:s.players[0].user_id,target_id:s.players[1].user_id,skill:'fog',starts_at:new Date().toISOString(),expires_at:new Date(Date.now()+600).toISOString(),consumed_at:null,region:null,keypad:null}]
+    const board=s.battle!.boards![1];board.redacted_cells=Array.from({length:81},(_,i)=>i);board.entries=Array(81).fill(null)
+  })
+  server.respond((s)=> {
+    if(s.battle!.effects.length && Date.parse(s.battle!.effects[0].expires_at)<=Date.now()) {
+      s.battle!.effects=[];const board=s.battle!.boards![1];board.entries=[...board.clues];board.redacted_cells=[];s.cursor++
+    }
+  })
+  await server.resync();await expect(rival.getByRole('gridcell',{name:/concealed by Fog/})).toHaveCount(81)
+  await expect(rival.getByRole('gridcell').nth(1)).toHaveText('3',{timeout:1500})
+  await expect(page.locator('.fog-board')).toHaveCount(0)
+})
+
 test('Confirmed mistakes preserve entries, recover input, pulse pressure, transfer energy and survive reload', async ({page}) => {
   const server=await roomFixture(page)
   const grid=page.getByRole('grid',{name:'Sudoku puzzle',exact:true}), pressure=page.getByRole('meter',{name:'Your mistake pressure'})

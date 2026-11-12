@@ -6,14 +6,14 @@ export const DEFAULT_PRESSURE_RULES: PressureRules = { threshold: 3, energyPerBr
 export type BattleRules = {
   version: number; maxEnergy: number; cooldownMs: number; freezeImmunityMs: number
   rewards: Record<UnitKind, number>; skills: Record<Skill, { cost: number; durationMs: number }>
-  mistakePressure?: PressureRules; puzzleAssignment?: string; scrambleMode?: 'board-digits-v1'
+  mistakePressure?: PressureRules; puzzleAssignment?: string; scrambleMode?: 'board-digits-v1'; fogScope?: 'board' | 'box'
 }
 export const BATTLE_SKILLS = {
-  fog: { cost: 1, durationMs: 5000 }, freeze: { cost: 2, durationMs: 2500 },
+  fog: { cost: 1, durationMs: 5000 }, freeze: { cost: 2, durationMs: 3500 },
   scramble: { cost: 4, durationMs: 8000 }, shield: { cost: 5, durationMs: 20000 },
 } as const
 export const DEFAULT_BATTLE_RULES: BattleRules = {
-  version: 5, maxEnergy: 5, cooldownMs: 1000, freezeImmunityMs: 3000, mistakePressure: DEFAULT_PRESSURE_RULES, puzzleAssignment: 'independent-solver-matched-v1', scrambleMode: 'board-digits-v1',
+  version: 6, maxEnergy: 5, cooldownMs: 1000, freezeImmunityMs: 3000, mistakePressure: DEFAULT_PRESSURE_RULES, puzzleAssignment: 'independent-solver-matched-v1', scrambleMode: 'board-digits-v1', fogScope: 'board',
   rewards: { row: 1, column: 1, box: 2 }, skills: BATTLE_SKILLS,
 }
 export const SKILLS: Skill[] = ['fog', 'freeze', 'scramble', 'shield']
@@ -23,6 +23,15 @@ export const NORMAL_KEYPAD = [1, 2, 3, 4, 5, 6, 7, 8, 9]
 export function unitCells(kind: UnitKind, index: number): number[] {
   if (!Number.isInteger(index) || index < 0 || index > 8) return []
   return Array.from({ length: 9 }, (_, i) => kind === 'row' ? index * 9 + i : kind === 'column' ? i * 9 + index : Math.floor(index / 3) * 27 + index % 3 * 3 + Math.floor(i / 3) * 9 + i % 3)
+}
+export function fogCells(region: number | null | undefined): number[] {
+  return region === undefined ? [] : region === null ? Array.from({length:81},(_,i) => i) : unitCells('box',region)
+}
+const ROW_PRAISE = ['LOGIC SURGE!', 'PERFECT LINE!', 'GRID GENIUS!', 'NUMBER NOVA!', 'SHARP SOLVE!']
+export function rowCelebration(units: CompletedUnit[]): string | null {
+  const row=units.find((unit) => unit.kind==='row')
+  if(!row)return null
+  return units.length>=3 ? 'GRID OVERDRIVE!' : units.length===2 ? 'LOGIC COMBO!' : ROW_PRAISE[row.index%ROW_PRAISE.length]
 }
 export function validKeypad(value: number[] | null | undefined): number[] {
   return value?.length === 9 && new Set(value).size === 9 && value.every((n) => NORMAL_KEYPAD.includes(n)) ? value : NORMAL_KEYPAD
